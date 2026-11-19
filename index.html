@@ -405,6 +405,9 @@ renderList();
   #tipbox .qr.show{display:inline-block}
   #tipbox .qrtip{display:none;margin:8px 0 2px;font-size:11px;color:#8fa8c8}
   #tipbox .qrtip.show{display:block}
+  #tipbox .qrdl{display:none;margin:10px auto 0;padding:8px 0;border-radius:10px;background:#1b2a40;
+    border:1px solid #2f4a70;color:#adc4e0;font-size:12px;text-decoration:none}
+  #tipbox .qrdl.show{display:block}
   #tipbox button{width:100%;margin-top:8px;border-radius:12px;padding:11px 0;font-size:14px;border:none}
   #tipgo{background:#ff5c8a;color:#2a0a16;font-weight:600}
   #tipno{background:#1b2a40;color:#adc4e0;border:1px solid #2f4a70}
@@ -417,7 +420,8 @@ renderList();
     <h3>祝老板生意兴隆<br>财源广进 日进斗金</h3>
     <p>投喂 10 元，给小满加个鸡腿</p>
     <img class="qr" id="tipqr" src="qr.png" alt="微信收款码" onerror="this.style.display='none'">
-    <div class="qrtip" id="qrtip">长按二维码识别，或截图后用微信扫一扫</div>
+    <div class="qrtip" id="qrtip">用微信「扫一扫」选这张图付款<br>手机长按图片可保存，或点下方保存</div>
+    <a class="qrdl" id="qrdl" href="qr.png" download="收款码.png">保存收款码</a>
     <button id="tipgo">投喂 10 元</button>
     <button id="tipno">暂不投喂</button>
   </div>
@@ -430,7 +434,7 @@ renderList();
   var qrtip = document.getElementById('qrtip');
   var go = document.getElementById('tipgo');
   function openTip(){
-    if(qr.complete && qr.naturalWidth){ qr.classList.add('show'); qrtip.classList.add('show'); }
+    if(qr.complete && qr.naturalWidth){ qr.classList.add('show'); qrtip.classList.add('show'); document.getElementById('qrdl').classList.add('show'); }
     if(go) go.style.display = 'none';
     mask.classList.add('show');
   }
