@@ -1,0 +1,7 @@
+76	</div>
+77	<input type="file" id="mkfile" accept=".json,application/json" style="display:none">
+78	<div id="panel">
+79	  <div id="chips"></div>
+80	  <div class="loc" id="locbox">还没定位 · 点右上角「定位我」，浏览器会问你要权限，允许了才准</div>
+81	</div>
+82	
