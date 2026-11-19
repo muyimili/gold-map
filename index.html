@@ -620,7 +620,7 @@ renderList();
     <img class="qr" id="tipqr" src="qr.png?v=4" alt="微信赞助码" onerror="this.style.display='none'">
     <div class="qrtip" id="qrtip">微信扫一扫这张图，赞助小满<div style="margin-top:4px;color:#8fa8c8">手机长按图片可保存，或点下方保存</div></div>
     <a class="qrdl" id="qrdl" href="qr.png" download="赞助码.png">保存赞助码</a>
-    <button id="tipno" disabled>暂不投喂（5s）</button>
+    <button id="tipno" disabled>暂不投喂</button>
   </div>
 </div>
 
@@ -642,11 +642,10 @@ renderList();
     var left = 5;
     clearInterval(lockTimer);
     noBtn.disabled = true;
-    noBtn.textContent = '暂不投喂（' + left + 's）';
+    noBtn.textContent = '暂不投喂';
     lockTimer = setInterval(function(){
       left--;
-      if(left > 0){ noBtn.textContent = '暂不投喂（' + left + 's）'; }
-      else { clearInterval(lockTimer); noBtn.disabled = false; noBtn.textContent = '暂不投喂'; }
+      if(left <= 0){ clearInterval(lockTimer); noBtn.disabled = false; }
     }, 1000);
   }
   function openTip(){
