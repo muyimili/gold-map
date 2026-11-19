@@ -15,7 +15,7 @@
     okList(arr).forEach(function(m){
       if(have[m.id]) return;
       marks.push({id:String(m.id), name:m.name||'点', note:m.note||'',
-                  lat:+m.lat, lng:+m.lng, t:m.t||Date.now()});
+                  lat:+m.lat, lng:+m.lng, o:m.o||'', t:m.t||Date.now()});
       have[m.id] = 1; n++;
     });
     return n;

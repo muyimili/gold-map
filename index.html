@@ -43,6 +43,7 @@
   .mk:hover{background:#2a1524}
   .mk b{color:#ff9ec2;font-weight:600}
   .mk i{color:#7d8fa8;font-size:11px;font-style:normal;display:block;margin-top:2px}
+  .mk em{font-style:normal;font-size:11px;color:#8fa8c8;margin-left:5px}
   .mk u{cursor:pointer;color:#ef6a8a;text-decoration:none;position:absolute;right:6px;top:6px;
     padding:0 4px;line-height:1.4}
   .mktip{color:#9fb6d6;font-size:12px;line-height:1.6}
@@ -373,6 +374,15 @@ var marks = [];
 try { marks = JSON.parse(localStorage.getItem(MK_KEY) || '[]') || []; } catch(e){ marks = []; }
 
 var markLayer = L.layerGroup().addTo(map);
+
+/* 本机身份：用来判断哪些标记是我自己传的 */
+var MY_ID = '';
+try { MY_ID = localStorage.getItem('mk_uid') || ''; } catch(e){}
+if(!MY_ID){
+  MY_ID = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  try { localStorage.setItem('mk_uid', MY_ID); } catch(e){}
+}
+function isMine(m){ return !m.o || m.o === MY_ID; }
 var adding = false;
 
 function saveMarks(){
@@ -409,7 +419,9 @@ function renderList(){
   marks.slice().reverse().forEach(function(m){
     var d = document.createElement('div');
     d.className = 'mk';
-    d.innerHTML = '<u data-del="'+m.id+'">删</u><b>'+m.name+'</b>'+
+    var mine = isMine(m);
+    d.innerHTML = (mine ? '<u data-del="'+m.id+'">删</u>' : '') +
+      '<b>'+m.name+'</b>' + (mine ? '' : '<em>别人的</em>') +
       '<i>'+(m.note || '（无备注）')+' · '+m.lat+', '+m.lng+'</i>';
     d.onclick = function(ev){
       if(ev.target.dataset.del){
@@ -452,6 +464,7 @@ function openMarkDialog(latlng){
     note: (note||'').trim(),
     lat: +latlng.lat.toFixed(5),
     lng: +latlng.lng.toFixed(5),
+    o: MY_ID,
     t: Date.now()
   };
   marks.push(m);

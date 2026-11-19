@@ -1,26 +1,15 @@
-455	  marks.push(m);
-456	  saveMarks(); drawMarks(); renderList();
-457	  map.flyTo([m.lat, m.lng], Math.max(map.getZoom(), 14));
-458	}
-459	
-460	map.on('click', function(e){
-461	  if(!adding) return;
-462	  adding = false;
-463	  btn3.classList.remove('on');
-464	  btn3.textContent = '✚ 添加标记';
-465	  addhint.classList.remove('show');
-466	  map.getContainer().style.cursor = '';
-467	  openMarkDialog(e.latlng);
-468	});
-469	
-470	document.getElementById('mkclose').onclick = function(){ mkbox.classList.remove('show'); };
-471	
-472	document.getElementById('mkexp').onclick = function(){
-473	  if(!marks.length){ alert('还没有标记可以导出'); return; }
-474	  var blob = new Blob([JSON.stringify({v:1, marks:marks}, null, 1)], {type:'application/json'});
-475	  var a = document.createElement('a');
-476	  a.href = URL.createObjectURL(blob);
-477	  a.download = 'my-marks-' + new Date().toISOString().slice(0,10) + '.json';
-478	  a.click();
-479	  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 3000);
-480	};
+444	function openMarkDialog(latlng){
+445	  var name = prompt('给这个点起个名字', '我的点');
+446	  if(name === null) return;
+447	  var note = prompt('备注（可以留空）', '');
+448	  if(note === null) note = '';
+449	  var m = {
+450	    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+451	    name: (name||'').trim() || '我的点',
+452	    note: (note||'').trim(),
+453	    lat: +latlng.lat.toFixed(5),
+454	    lng: +latlng.lng.toFixed(5),
+455	    t: Date.now()
+456	  };
+457	  marks.push(m);
+458	  saveMarks(); drawMarks(); renderList();
