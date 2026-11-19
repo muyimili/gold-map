@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -145,7 +145,7 @@ const renderer = L.canvas({padding:0.3});
 const layerAll = L.layerGroup().addTo(map);
 
 /* 手机上一次性画两万个点会卡死，改成「只画当前视野里最重要的那批」 */
-const MAXPTS = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ? 1200 : 4000;
+const MAXPTS = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ? 700 : 3000;
 const ptsSorted = pts.slice().sort((a,b)=>(a.sc|0)-(b.sc|0));   // 规模大的排前面
 const popup = L.popup({maxWidth:260});
 let shownN = 0;
