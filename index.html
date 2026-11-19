@@ -51,6 +51,16 @@
     background:#ff5c8a;color:#2a0a16;font-size:13px;padding:7px 14px;border-radius:20px;
     font-weight:600;display:none;box-shadow:0 2px 10px rgba(0,0,0,.4)}
   #addhint.show{display:block}
+  #searchwrap{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:965;
+    width:calc(100% - 150px);max-width:330px;display:flex;gap:6px}
+  #q{flex:1;min-width:0;background:rgba(14,22,38,.96);border:1px solid #23375a;border-radius:20px;
+    color:#e6eefc;font-size:13px;padding:8px 14px;outline:none;font-family:inherit}
+  #q:focus{border-color:#3b6bb5}
+  #qbtn{background:#1b3a6b;border:1px solid #3b6bb5;color:#dce9ff;border-radius:20px;
+    padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  #qsug{margin-top:8px}
+  #qsug .sg{display:inline-block;padding:3px 9px;margin:3px 4px 0 0;border-radius:20px;
+    background:#17263f;border:1px solid #2b4468;font-size:12px;cursor:pointer;white-space:nowrap;color:#cfe0f6}
   .pop{font-size:13px;line-height:1.7}
   .pop h4{margin:0 0 4px;color:#ffd66b;font-size:14px}
   .leaflet-popup-content-wrapper{background:#101c2f;color:#dfe9f7;border:1px solid #2b4468}
@@ -64,6 +74,10 @@
 <div id="title">中国金矿分布 <b>全国矿产地 2 万+ 处</b><span id="cnt" style="color:#8fb3dd"></span></div>
 <button id="btn">定位我</button>
 <button id="btn2">隐藏矿点</button>
+<div id="searchwrap">
+  <input id="q" type="search" placeholder="搜城市，比如 重庆 / 中山" autocomplete="off">
+  <button id="qbtn">搜</button>
+</div>
 <button id="btn3">✚ 添加标记</button>
 <div id="addhint">点地图上你要标的地方</div>
 <div id="marks">
@@ -82,6 +96,7 @@
 
 <script src="leaflet/leaflet.js"></script>
 <script src="gold-points.js"></script>
+<script src="city-index.js"></script>
 <script>
 const map = L.map('map', {zoomControl:false, attributionControl:false, preferCanvas:true}).setView([34.5, 108], 5);
 
@@ -196,6 +211,100 @@ map.on('moveend', function(){
   tmr = setTimeout(renderVisible, 150);
 });
 renderVisible();
+
+/* ---------- 城市搜索 ---------- */
+var cityList = (window.CITY_INDEX || []);
+var qEl = document.getElementById('q');
+var sugBox = null;
+
+function normCity(n){
+  return (n || '').replace(/(自治州|地区|盟|市|县|区|省)$/,'');
+}
+
+function searchCity(kw){
+  kw = (kw || '').trim();
+  if(!kw) return [];
+  var nk = normCity(kw);
+  var exact = [], pre = [], part = [];
+  cityList.forEach(function(it){
+    var n = normCity(it.n);
+    if(n === nk) exact.push(it);
+    else if(n.indexOf(nk) === 0) pre.push(it);
+    else if(n.indexOf(nk) > 0) part.push(it);
+  });
+  return exact.concat(pre, part).slice(0, 8);
+}
+
+function closeSug(){
+  if(sugBox && sugBox.parentNode) sugBox.parentNode.removeChild(sugBox);
+  sugBox = null;
+}
+
+function showSug(list){
+  closeSug();
+  if(!list.length){
+    document.getElementById('locbox').innerHTML =
+      '没搜到这个地名 · 换个写法试试，比如只写「' + (qEl.value.trim().slice(0,2) || '城市') + '」';
+    return;
+  }
+  sugBox = document.createElement('div');
+  sugBox.id = 'qsug';
+  list.forEach(function(it){
+    var b = document.createElement('span');
+    b.className = 'sg';
+    b.textContent = it.n;
+    b.onclick = function(){ gotoCity(it); };
+    sugBox.appendChild(b);
+  });
+  document.getElementById('panel').insertBefore(sugBox, document.getElementById('locbox'));
+}
+
+function gotoCity(it){
+  closeSug();
+  qEl.value = it.n;
+  qEl.blur();
+  var z = it.l === 'district' ? 11 : (it.l === 'city' ? 10 : 8);
+  if(!showMines){
+    showMines = true;
+    layerAll.addTo(map);
+    document.getElementById('btn2').textContent = '隐藏矿点';
+  }
+  map.setView([it.c[1], it.c[0]], z);
+  if(typeof renderVisible === 'function') renderVisible();
+  var box = document.getElementById('locbox');
+  var after = function(){
+    map.off('moveend', after);
+    var inView = 0, near = null, nearD = -1;
+    var b = map.getBounds();
+    ptsSorted.forEach(function(p){
+      if(!b.contains([p.la, p.lo])) return;
+      if(!kindsOn[p.kd]) return;
+      inView++;
+    });
+    box.innerHTML = '已跳到 <b>' + it.n + '</b> · 这一屏有 <b>' + inView + '</b> 处矿点'
+      + (inView ? '' : ' · 这块暂时没录到，换周边城市看看');
+  };
+  map.on('moveend', after);
+}
+
+document.getElementById('qbtn').onclick = function(){ showSug(searchCity(qEl.value)); };
+qEl.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    var list = searchCity(qEl.value);
+    if(list.length === 1) gotoCity(list[0]);
+    else showSug(list);
+    e.preventDefault();
+  }
+});
+qEl.addEventListener('input', function(){
+  var v = qEl.value.trim();
+  if(v.length >= 1 && cityList.length){
+    var list = searchCity(v);
+    if(list.length && normCity(list[0].n) === normCity(v)){ closeSug(); return; }
+    showSug(list);
+  } else closeSug();
+});
+map.on('movestart', closeSug);
 
 function applyFilter(){ renderVisible(); }
 

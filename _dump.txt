@@ -1,7 +1,21 @@
-76	</div>
-77	<input type="file" id="mkfile" accept=".json,application/json" style="display:none">
-78	<div id="panel">
-79	  <div id="chips"></div>
-80	  <div class="loc" id="locbox">还没定位 · 点右上角「定位我」，浏览器会问你要权限，允许了才准</div>
-81	</div>
-82	
+300	  var v = qEl.value.trim();
+301	  if(v.length >= 1 && cityList.length){
+302	    var list = searchCity(v);
+303	    if(list.length && normCity(list[0].n) === normCity(v)){ closeSug(); return; }
+304	    showSug(list);
+305	  } else closeSug();
+306	});
+307	map.on('movestart', closeSug);
+308	
+309	function applyFilter(){ renderVisible(); }
+310	
+311	/* ── 底部矿种筛选 chips ── */
+312	const chips = document.getElementById('chips');
+313	Object.keys(kindsOn).forEach(k=>{
+314	  const s = document.createElement('span');
+315	  const found = Object.keys(KIND_STYLE).find(x=>KIND_STYLE[x].label===k);
+316	  const cls = (KIND_STYLE[found]||{cls:'k3'}).cls;
+317	  s.className='chip '+cls+(kindsOn[k]?' on':'');
+318	  s.textContent = k;
+319	  s.onclick=()=>{
+320	    kindsOn[k]=!kindsOn[k];
