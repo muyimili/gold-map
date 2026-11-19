@@ -85,7 +85,7 @@
 <script>
 const map = L.map('map', {zoomControl:false, attributionControl:false, preferCanvas:true}).setView([34.5, 108], 5);
 
-L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
   subdomains:['1','2','3','4'], maxZoom: 18, className:'darktile'
 }).addTo(map);
 
@@ -141,35 +141,63 @@ const pts = D.pts.map(p=>{
 });
 const total = pts.length;
 
-const renderer = L.canvas({padding:0.5});
-const layerAll = L.layerGroup();
-const cs = [];
-for(let i=0;i<pts.length;i++){
-  const p = pts[i];
-  const cm = L.circleMarker([p.lat,p.lng], {
-    radius: RAD[p.sc] ?? 2.4,
-    color: p.st.c, weight: 0.6, opacity: .95,
-    fillColor: p.st.c, fillOpacity: .55,
-    renderer
-  });
-  cm._p = p;
-  cm.bindPopup(`<div class="pop"><h4>${p.name}</h4>
+const renderer = L.canvas({padding:0.3});
+const layerAll = L.layerGroup().addTo(map);
+
+/* 手机上一次性画两万个点会卡死，改成「只画当前视野里最重要的那批」 */
+const MAXPTS = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ? 1200 : 4000;
+const ptsSorted = pts.slice().sort((a,b)=>(a.sc|0)-(b.sc|0));   // 规模大的排前面
+const popup = L.popup({maxWidth:260});
+let shownN = 0;
+
+function popHtml(p){
+  return `<div class="pop"><h4>${p.name}</h4>
     <div style="color:#8fb3dd;font-size:12px;margin-bottom:5px">
       ${p.kd} · ${SC[p.sc]||'未标注'} · ${US[p.us]||'未标注'}<br>
-      约 ${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}（精度约百米，公开名录坐标）</div></div>`, {maxWidth:260});
-  cm.addTo(layerAll);
-  cs.push(cm);
+      约 ${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}（精度约百米，公开名录坐标）</div></div>`;
 }
-layerAll.addTo(map);
-document.getElementById('cnt').textContent = ' · ' + total.toLocaleString() + ' 处';
 
-function applyFilter(){
-  for(const cm of cs){
-    const on = kindsOn[cm._p.st.label];
-    if(on){ if(!layerAll.hasLayer(cm)) layerAll.addLayer(cm); }
-    else { if(layerAll.hasLayer(cm)) layerAll.removeLayer(cm); }
+function renderVisible(){
+  layerAll.clearLayers();
+  shownN = 0;
+  if(!map.hasLayer(layerAll)) return;
+  const b = map.getBounds().pad(0.1);
+  const s=b.getSouth(), n=b.getNorth(), w=b.getWest(), e=b.getEast();
+  let hit = 0;
+  for(let i=0;i<ptsSorted.length;i++){
+    const p = ptsSorted[i];
+    if(p.lat<s||p.lat>n||p.lng<w||p.lng>e) continue;
+    if(!kindsOn[p.st.label]) continue;
+    hit++;
+    if(shownN >= MAXPTS) continue;
+    const cm = L.circleMarker([p.lat,p.lng], {
+      radius: RAD[p.sc] ?? 2.4,
+      color: p.st.c, weight: 0.6, opacity: .95,
+      fillColor: p.st.c, fillOpacity: .55,
+      renderer
+    });
+    cm._p = p;
+    cm.addTo(layerAll);
+    shownN++;
   }
+  document.getElementById('cnt').textContent = ' · 全国 ' + total.toLocaleString() + ' 处' +
+    (hit > shownN ? '，这片显示 ' + shownN.toLocaleString() + ' 处（放大看更全）' : '');
 }
+
+layerAll.on('click', function(ev){
+  const p = ev.layer && ev.layer._p;
+  if(!p) return;
+  popup.setLatLng(ev.latlng).setContent(popHtml(p)).openOn(map);
+});
+
+let tmr = null;
+map.on('moveend', function(){
+  clearTimeout(tmr);
+  tmr = setTimeout(renderVisible, 150);
+});
+renderVisible();
+
+function applyFilter(){ renderVisible(); }
 
 /* ── 底部矿种筛选 chips ── */
 const chips = document.getElementById('chips');
@@ -224,7 +252,7 @@ document.getElementById('btn').onclick = ()=>{
 let showMines = true;
 document.getElementById('btn2').onclick = ()=>{
   showMines = !showMines;
-  if(showMines) layerAll.addTo(map); else map.removeLayer(layerAll);
+  if(showMines){ layerAll.addTo(map); renderVisible(); } else map.removeLayer(layerAll);
   document.getElementById('btn2').textContent = showMines ? '隐藏矿点' : '显示矿点';
 };
 
@@ -433,8 +461,15 @@ renderList();
   var qr = document.getElementById('tipqr');
   var qrtip = document.getElementById('qrtip');
   var go = document.getElementById('tipgo');
+  var qrdl = document.getElementById('qrdl');
+  function showQr(){
+    if(!qr.naturalWidth) return;
+    qr.classList.add('show'); qrtip.classList.add('show'); qrdl.classList.add('show');
+  }
+  qr.addEventListener('load', showQr);
   function openTip(){
-    if(qr.complete && qr.naturalWidth){ qr.classList.add('show'); qrtip.classList.add('show'); document.getElementById('qrdl').classList.add('show'); }
+    if(qr.complete && qr.naturalWidth) showQr();
+    else { setTimeout(showQr, 800); setTimeout(showQr, 2500); }
     if(go) go.style.display = 'none';
     mask.classList.add('show');
   }
