@@ -9,11 +9,12 @@
   }) : []; }
 
   function mergeInto(arr){
-    var have = {};
+    var have = {}, del = {};
+    (window.__getDel ? window.__getDel() : []).forEach(function(id){ del[id] = 1; });
     marks.forEach(function(m){ have[m.id] = 1; });
     var n = 0;
     okList(arr).forEach(function(m){
-      if(have[m.id]) return;
+      if(have[m.id] || del[m.id]) return;
       marks.push({id:String(m.id), name:m.name||'点', note:m.note||'',
                   lat:+m.lat, lng:+m.lng, o:m.o||'', t:m.t||Date.now()});
       have[m.id] = 1; n++;
@@ -38,6 +39,13 @@
     }).then(function(o){
       pulling = false;
       var remote = (o && o.data && Array.isArray(o.data.marks)) ? o.data.marks : [];
+      var rdel = (o && o.data && Array.isArray(o.data.del)) ? o.data.del : [];
+      if(rdel.length){
+        var before = marks.length;
+        marks = marks.filter(function(m){ return rdel.indexOf(m.id) < 0; });
+        if(marks.length !== before){ saveMarks(); drawMarks(); renderList(); }
+        if(window.__getDel) rdel.forEach(function(id){ window.__addDel(id); });
+      }
       if(!remote.length){ if(marks.length) push(true); return; }
       var n = mergeInto(remote);
       if(n){ saveMarks(); drawMarks(); renderList(); }
@@ -53,7 +61,8 @@
     if(pushing) return;
     if(!force && !dirty) return;
     pushing = true;
-    var body = JSON.stringify({name:'goldmap-marks', data:{marks:marks}});
+    var dl = window.__getDel ? window.__getDel() : [];
+    var body = JSON.stringify({name:'goldmap-marks', data:{marks:marks, del:dl}});
     req(API, {method:'PUT', headers:{'Content-Type':'application/json'}, body:body}, 9000)
       .then(function(r){
         pushing = false;

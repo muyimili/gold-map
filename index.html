@@ -384,6 +384,17 @@ document.getElementById('btn2').onclick = ()=>{
 var MK_KEY = 'goldmap.marks.v1';
 var marks = [];
 try { marks = JSON.parse(localStorage.getItem(MK_KEY) || '[]') || []; } catch(e){ marks = []; }
+/* 删除名单：删过的 id 记下来，从别人的设备同步回来时也不会复活 */
+var DEL_KEY = 'goldmap.del.v1';
+var deleted = [];
+try { deleted = JSON.parse(localStorage.getItem(DEL_KEY) || '[]') || []; } catch(e){ deleted = []; }
+window.__getDel = function(){ return deleted; };
+window.__addDel = function(id){
+  if(!id || deleted.indexOf(id) >= 0) return;
+  deleted.push(id);
+  if(deleted.length > 800) deleted = deleted.slice(-800);
+  try { localStorage.setItem(DEL_KEY, JSON.stringify(deleted)); } catch(e){}
+};
 
 var markLayer = L.layerGroup().addTo(map);
 
@@ -395,6 +406,11 @@ if(!MY_ID){
   try { localStorage.setItem('mk_uid', MY_ID); } catch(e){}
 }
 function isMine(m){ return !m.o || m.o === MY_ID; }
+/* 管理员模式：本机手动开启后可以删任何人的点（只影响这台手机） */
+var IS_ADMIN = false;
+try { IS_ADMIN = localStorage.getItem('mk_admin') === '1'; } catch(e){}
+function isAdmin(){ return IS_ADMIN; }
+function canDel(m){ return isMine(m) || isAdmin(); }
 var adding = false;
 
 function saveMarks(){
@@ -418,6 +434,22 @@ function drawMarks(){
   });
 }
 
+/* 连点左上标题 5 下，切换管理员模式 */
+(function(){
+  var t = document.getElementById('title'), n = 0, tm = null;
+  if(!t) return;
+  t.addEventListener('click', function(){
+    n++; clearTimeout(tm); tm = setTimeout(function(){ n = 0; }, 1200);
+    if(n >= 5){
+      n = 0;
+      IS_ADMIN = !IS_ADMIN;
+      try { localStorage.setItem('mk_admin', IS_ADMIN ? '1' : '0'); } catch(e){}
+      renderList();
+      alert(IS_ADMIN ? '管理员模式已开启：可以删所有人的点' : '管理员模式已关闭');
+    }
+  });
+})();
+
 var mkbox = document.getElementById('marks');
 var mklist = document.getElementById('mklist');
 
@@ -432,13 +464,14 @@ function renderList(){
     var d = document.createElement('div');
     d.className = 'mk';
     var mine = isMine(m);
-    d.innerHTML = (mine ? '<u data-del="'+m.id+'">删</u>' : '') +
+    d.innerHTML = (canDel(m) ? '<u data-del="'+m.id+'">删</u>' : '') +
       '<b>'+m.name+'</b>' + (mine ? '' : '<em>别人的</em>') +
       '<i>'+(m.note || '（无备注）')+' · '+m.lat+', '+m.lng+'</i>';
     d.onclick = function(ev){
       if(ev.target.dataset.del){
         var id = ev.target.dataset.del;
         if(confirm('删掉「'+m.name+'」？')){
+          window.__addDel(id);
           marks = marks.filter(function(x){ return x.id !== id; });
           saveMarks(); drawMarks(); renderList();
         }
