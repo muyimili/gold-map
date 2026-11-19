@@ -609,7 +609,6 @@ renderList();
   #tipbox button{width:100%;margin-top:8px;border-radius:12px;padding:11px 0;font-size:14px;border:none}
   #tipgo{background:#ff5c8a;color:#2a0a16;font-weight:600}
   #tipno{background:#1b2a40;color:#adc4e0;border:1px solid #2f4a70}
-  #tipno.lock{opacity:.45;color:#6b83a3;cursor:not-allowed}
 </style>
 
 
@@ -620,7 +619,7 @@ renderList();
     <img class="qr" id="tipqr" src="qr.png?v=4" alt="微信赞助码" onerror="this.style.display='none'">
     <div class="qrtip" id="qrtip">微信扫一扫这张图，赞助小满<div style="margin-top:4px;color:#8fa8c8">手机长按图片可保存，或点下方保存</div></div>
     <a class="qrdl" id="qrdl" href="qr.png" download="赞助码.png">保存赞助码</a>
-    <button id="tipno" class="lock">暂不投喂</button>
+    <button id="tipno">暂不投喂</button>
   </div>
 </div>
 
@@ -636,28 +635,15 @@ renderList();
     qr.classList.add('show'); qrtip.classList.add('show'); qrdl.classList.add('show');
   }
   qr.addEventListener('load', showQr);
-  var noBtn = document.getElementById('tipno');
-  var unlockAt = 0;
-  function lockNo(){
-    unlockAt = Date.now() + 5000;
-    noBtn.classList.add('lock');
-  }
-  function unlocked(){ return Date.now() >= unlockAt; }
   function openTip(){
     if(qr.complete && qr.naturalWidth) showQr();
     else { setTimeout(showQr, 800); setTimeout(showQr, 2500); }
     if(go) go.style.display = 'none';
     mask.classList.add('show');
-    lockNo();
   }
-  function closeTip(){ mask.classList.remove('show'); }
   document.getElementById('btn4').onclick = openTip;
-  noBtn.onclick = function(){ if(!unlocked()) return; closeTip(); };
-  mask.onclick = function(ev){
-    if(ev.target !== mask) return;
-    if(!unlocked()) return;
-    closeTip();
-  };
+  document.getElementById('tipno').onclick = function(){ mask.classList.remove('show'); };
+  mask.onclick = function(ev){ if(ev.target === mask) mask.classList.remove('show'); };
   setTimeout(openTip, 600);
 })();
 </script>
