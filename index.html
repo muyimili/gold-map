@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>中国金矿分布 · 小满版</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="leaflet/leaflet.css">
 <style>
   html,body{margin:0;height:100%;background:#0b1220;color:#e6eefc;
     font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
@@ -80,7 +80,7 @@
   <div class="loc" id="locbox">还没定位 · 点右上角「定位我」，浏览器会问你要权限，允许了才准</div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="leaflet/leaflet.js"></script>
 <script src="gold-points.js"></script>
 <script>
 const map = L.map('map', {zoomControl:false, attributionControl:false, preferCanvas:true}).setView([34.5, 108], 5);
