@@ -390,5 +390,48 @@ mkChip.onclick = function(){
 drawMarks();
 renderList();
 </script>
+
+<style>
+  #btn4{position:absolute;left:10px;bottom:118px;z-index:960;background:#3a2a08;border:1px solid #b58a3b;
+    color:#ffd66b;border-radius:12px;padding:8px 12px;font-size:13px}
+  #tipmask{position:fixed;inset:0;z-index:3000;background:rgba(4,8,16,.72);display:none;
+    align-items:center;justify-content:center;padding:16px}
+  #tipmask.show{display:flex}
+  #tipbox{width:100%;max-width:320px;background:#131c2c;border:1px solid #2f4a70;border-radius:16px;
+    padding:18px 16px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+  #tipbox h3{margin:0 0 6px;font-size:16px;color:#ffd66b;line-height:1.5}
+  #tipbox p{margin:6px 0 14px;font-size:12px;color:#9fb6d6;line-height:1.6}
+  #tipbox .qr{width:100%;max-width:220px;border-radius:10px;background:#fff;padding:6px;display:none}
+  #tipbox .qr.show{display:inline-block}
+  #tipbox button{width:100%;margin-top:8px;border-radius:12px;padding:11px 0;font-size:14px;border:none}
+  #tipgo{background:#ff5c8a;color:#2a0a16;font-weight:600}
+  #tipno{background:#1b2a40;color:#adc4e0;border:1px solid #2f4a70}
+</style>
+
+<button id="btn4">☕ 投喂</button>
+
+<div id="tipmask">
+  <div id="tipbox">
+    <h3>祝老板生意兴隆<br>财源广进 日进斗金</h3>
+    <p>投喂 10 元，给小满加个鸡腿</p>
+    <img class="qr" id="tipqr" src="qr.png" alt="微信收款码" onerror="this.style.display='none'">
+    <button id="tipgo">投喂 10 元</button>
+    <button id="tipno">暂不投喂</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var mask = document.getElementById('tipmask');
+  var qr = document.getElementById('tipqr');
+  document.getElementById('btn4').onclick = function(){ mask.classList.add('show'); };
+  document.getElementById('tipgo').onclick = function(){
+    if(qr.complete && qr.naturalWidth){ qr.classList.add('show'); }
+    else { alert('收款码还没放上去（qr.png）'); }
+  };
+  document.getElementById('tipno').onclick = function(){ mask.classList.remove('show'); };
+  mask.onclick = function(ev){ if(ev.target === mask) mask.classList.remove('show'); };
+})();
+</script>
 </body>
 </html>

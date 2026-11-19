@@ -1,4 +1,5 @@
 *.png
+!qr.png
 minerals.json
 *.py
 *.bak*
