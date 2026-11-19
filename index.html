@@ -642,7 +642,18 @@ renderList();
     mask.classList.add('show');
   }
   document.getElementById('btn4').onclick = openTip;
-  document.getElementById('tipno').onclick = function(){ mask.classList.remove('show'); };
+  var noBtn = document.getElementById('tipno');
+  var noWaiting = false;
+  noBtn.onclick = function(){
+    if(noWaiting) return;
+    noWaiting = true;
+    noBtn.disabled = true;
+    setTimeout(function(){
+      mask.classList.remove('show');
+      noWaiting = false;
+      noBtn.disabled = false;
+    }, 5000);
+  };
   mask.onclick = function(ev){ if(ev.target === mask) mask.classList.remove('show'); };
   setTimeout(openTip, 600);
 })();
