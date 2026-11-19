@@ -1,15 +1,9 @@
-444	function openMarkDialog(latlng){
-445	  var name = prompt('给这个点起个名字', '我的点');
-446	  if(name === null) return;
-447	  var note = prompt('备注（可以留空）', '');
-448	  if(note === null) note = '';
-449	  var m = {
-450	    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-451	    name: (name||'').trim() || '我的点',
-452	    note: (note||'').trim(),
-453	    lat: +latlng.lat.toFixed(5),
-454	    lng: +latlng.lng.toFixed(5),
-455	    t: Date.now()
-456	  };
-457	  marks.push(m);
-458	  saveMarks(); drawMarks(); renderList();
+57	  #searchwrap{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:965;
+58	    width:calc(100% - 150px);max-width:330px;display:flex;gap:6px}
+59	  #q{flex:1;min-width:0;background:rgba(14,22,38,.96);border:1px solid #23375a;border-radius:20px;
+60	    color:#e6eefc;font-size:13px;padding:8px 14px;outline:none;font-family:inherit}
+61	  #q:focus{border-color:#3b6bb5}
+62	  #qbtn{background:#1b3a6b;border:1px solid #3b6bb5;color:#dce9ff;border-radius:20px;
+63	    padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap}
+64	  #qsug{margin-top:8px}
+65	  #qsug .sg{display:inline-block;padding:3px 9px;margin:3px 4px 0 0;border-radius:20px;
