@@ -38,11 +38,13 @@
   #marks.show{display:block}
   #marks .hd{color:#ff9ec2;font-size:12px;margin-bottom:6px;display:flex;justify-content:space-between}
   #marks .hd span{cursor:pointer;color:#8fb3dd}
-  .mk{padding:6px;border-bottom:1px dashed #3a2434;cursor:pointer}
+  .mk{padding:6px 34px 6px 6px;border-bottom:1px dashed #3a2434;cursor:pointer;position:relative;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .mk:hover{background:#2a1524}
   .mk b{color:#ff9ec2;font-weight:600}
   .mk i{color:#7d8fa8;font-size:11px;font-style:normal;display:block;margin-top:2px}
-  .mk u{cursor:pointer;color:#ef6a8a;text-decoration:none;float:right}
+  .mk u{cursor:pointer;color:#ef6a8a;text-decoration:none;position:absolute;right:6px;top:6px;
+    padding:0 4px;line-height:1.4}
   .mktip{color:#9fb6d6;font-size:12px;line-height:1.6}
   #marks .ops{margin-top:7px;padding-top:7px;border-top:1px dashed #3a2434;display:flex;gap:6px}
   #marks .ops button{flex:1;background:#2a1524;border:1px solid #4a2238;color:#ffd6e6;
