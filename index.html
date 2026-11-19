@@ -429,13 +429,15 @@ renderList();
   var qr = document.getElementById('tipqr');
   var qrtip = document.getElementById('qrtip');
   var go = document.getElementById('tipgo');
-  document.getElementById('btn4').onclick = function(){ mask.classList.add('show'); };
-  go.onclick = function(){
-    if(qr.complete && qr.naturalWidth){ qr.classList.add('show'); qrtip.classList.add('show'); go.style.display='none'; }
-    else { alert('收款码还没放上去'); }
-  };
+  function openTip(){
+    if(qr.complete && qr.naturalWidth){ qr.classList.add('show'); qrtip.classList.add('show'); }
+    if(go) go.style.display = 'none';
+    mask.classList.add('show');
+  }
+  document.getElementById('btn4').onclick = openTip;
   document.getElementById('tipno').onclick = function(){ mask.classList.remove('show'); };
   mask.onclick = function(ev){ if(ev.target === mask) mask.classList.remove('show'); };
+  setTimeout(openTip, 600);
 })();
 </script>
 </body>
