@@ -1,51 +1,31 @@
-450	  }
-451	  mklist.innerHTML = '';
-452	  marks.slice().reverse().forEach(function(m){
-453	    var d = document.createElement('div');
-454	    d.className = 'mk';
-455	    var mine = isMine(m);
-456	    d.innerHTML = (canDel(m) ? '<u data-del="'+m.id+'">删</u>' : '') +
-457	      '<b>'+m.name+'</b>' + (mine ? '' : '<em>别人的</em>') +
-458	      '<i>'+(m.note || '（无备注）')+' · '+m.lat+', '+m.lng+'</i>';
-459	    d.onclick = function(ev){
-460	      if(ev.target.dataset.del){
-461	        var id = ev.target.dataset.del;
-462	        if(confirm('删掉「'+m.name+'」？')){
-463	          marks = marks.filter(function(x){ return x.id !== id; });
-464	          saveMarks(); drawMarks(); renderList();
-465	        }
-466	        return;
-467	      }
-468	      map.flyTo([m.lat, m.lng], 15);
-469	      markLayer.eachLayer(function(l){
-470	        var ll = l.getLatLng();
-471	        if(ll.lat===m.lat && ll.lng===m.lng) l.openPopup();
-472	      });
-473	    };
-474	    mklist.appendChild(d);
-475	  });
-476	}
-477	
-478	var btn3 = document.getElementById('btn3');
-479	var addhint = document.getElementById('addhint');
-480	btn3.onclick = function(){
-481	  adding = !adding;
-482	  btn3.classList.toggle('on', adding);
-483	  btn3.textContent = adding ? '取消添加' : '✚ 添加标记';
-484	  addhint.classList.toggle('show', adding);
-485	  map.getContainer().style.cursor = adding ? 'crosshair' : '';
-486	  if(adding) mkbox.classList.remove('show');
-487	};
-488	
-489	function openMarkDialog(latlng){
-490	  var name = prompt('给这个点起个名字', '我的点');
-491	  if(name === null) return;
-492	  var note = prompt('备注（可以留空）', '');
-493	  if(note === null) note = '';
-494	  var m = {
-495	    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-496	    name: (name||'').trim() || '我的点',
-497	    note: (note||'').trim(),
-498	    lat: +latlng.lat.toFixed(5),
-499	    lng: +latlng.lng.toFixed(5),
-500	    o: MY_ID,
+470	    d.onclick = function(ev){
+471	      if(ev.target.dataset.del){
+472	        var id = ev.target.dataset.del;
+473	        if(confirm('删掉「'+m.name+'」？')){
+474	          window.__addDel(id);
+475	          marks = marks.filter(function(x){ return x.id !== id; });
+476	          saveMarks(); drawMarks(); renderList();
+477	        }
+478	        return;
+479	      }
+480	      map.flyTo([m.lat, m.lng], 15);
+481	      markLayer.eachLayer(function(l){
+482	        var ll = l.getLatLng();
+483	        if(ll.lat===m.lat && ll.lng===m.lng) l.openPopup();
+484	      });
+485	    };
+486	    mklist.appendChild(d);
+487	  });
+488	}
+489	
+490	var btn3 = document.getElementById('btn3');
+491	var addhint = document.getElementById('addhint');
+492	btn3.onclick = function(){
+493	  adding = !adding;
+494	  btn3.classList.toggle('on', adding);
+495	  btn3.textContent = adding ? '取消添加' : '✚ 添加标记';
+496	  addhint.classList.toggle('show', adding);
+497	  map.getContainer().style.cursor = adding ? 'crosshair' : '';
+498	  if(adding) mkbox.classList.remove('show');
+499	};
+500	
