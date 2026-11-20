@@ -836,6 +836,9 @@ mkChip.onclick = function(){
 /* 「反馈」挪到最末位 */
 var fbEl = document.getElementById('fb4');
 if(fbEl && chips) chips.appendChild(fbEl);
+/* 「附近」放到反馈前面 */
+var nrEl = document.getElementById('nrbtn');
+if(nrEl && fbEl && chips) chips.insertBefore(nrEl, fbEl);
 
 drawMarks();
 renderList();
