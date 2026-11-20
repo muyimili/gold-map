@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>中国金矿分布 · 小满版</title>
+<title>涓浗閲戠熆鍒嗗竷 路 灏忔弧鐗?/title>
 <link rel="stylesheet" href="leaflet/leaflet.css">
 <style>
   html,body{margin:0;height:100%;background:#0b1220;color:#e6eefc;
@@ -109,33 +109,33 @@
 </head>
 <body>
 <div id="map"></div>
-<div id="title">中国金矿分布 <b>全国矿产地 2 万+ 处</b><span id="cnt" style="color:#8fb3dd"></span></div>
+<div id="title">涓浗閲戠熆鍒嗗竷 <b>鍏ㄥ浗鐭夸骇鍦?2 涓? 澶?/b><span id="cnt" style="color:#8fb3dd"></span></div>
 <div id="compass">
   <div class="nd">N</div><div class="sd">S</div><div class="wd">W</div><div class="ed">E</div>
   <div class="dt"></div>
   <div class="arw" id="hdgarw"></div>
 </div>
-<button id="btn">定位我</button>
-<button id="btn2">隐藏矿点</button>
+<button id="btn">瀹氫綅鎴?/button>
+<button id="btn2">闅愯棌鐭跨偣</button>
 <div id="searchwrap">
-  <input id="q" type="search" placeholder="搜城市，比如 重庆 / 中山" autocomplete="off">
-  <button id="qbtn">搜</button>
+  <input id="q" type="search" placeholder="鎼滃煄甯傦紝姣斿 閲嶅簡 / 涓北" autocomplete="off">
+  <button id="qbtn">鎼?/button>
 </div>
-<button id="btn3">✚ 添加标记</button>
-<div id="addhint">点地图上你要标的地方</div>
-<button id="btn5">⟳ 刷新</button>
+<button id="btn3">鉁?娣诲姞鏍囪</button>
+<div id="addhint">鐐瑰湴鍥句笂浣犺鏍囩殑鍦版柟</div>
+<button id="btn5">鉄?鍒锋柊</button>
 <div id="marks">
-  <div class="hd">我的标记 <span id="mkclose">收起</span></div>
+  <div class="hd">鎴戠殑鏍囪 <span id="mkclose">鏀惰捣</span></div>
   <div id="mklist"></div>
   <div class="ops">
-    <button id="mkexp">导出</button>
-    <button id="mkimp">导入</button>
+    <button id="mkexp">瀵煎嚭</button>
+    <button id="mkimp">瀵煎叆</button>
   </div>
 </div>
 <input type="file" id="mkfile" accept=".json,application/json" style="display:none">
 <div id="panel">
-  <div id="chips"><button id="btn4">☕ 投喂</button></div>
-  <div class="loc" id="locbox">还没定位 · 点右上角「定位我」，浏览器会问你要权限，允许了才准</div>
+  <div id="chips"><button id="btn4">鈽?鎶曞杺</button></div>
+  <div class="loc" id="locbox">杩樻病瀹氫綅 路 鐐瑰彸涓婅銆屽畾浣嶆垜銆嶏紝娴忚鍣ㄤ細闂綘瑕佹潈闄愶紝鍏佽浜嗘墠鍑?/div>
 </div>
 
 <script src="leaflet/leaflet.js"></script>
@@ -144,7 +144,7 @@
 <script>
 const map = L.map('map', {zoomControl:false, attributionControl:false, preferCanvas:true}).setView([34.5, 108], 5);
 
-/* ── 底图：主用高德，失败自动切腾讯（两者都是 GCJ-02，坐标不用改） ── */
+/* 鈹€鈹€ 搴曞浘锛氫富鐢ㄩ珮寰凤紝澶辫触鑷姩鍒囪吘璁紙涓よ€呴兘鏄?GCJ-02锛屽潗鏍囦笉鐢ㄦ敼锛?鈹€鈹€ */
 const TILE_MAIN = {
   url:'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
   opt:{subdomains:['1','2','3','4'], maxZoom:18, className:'darktile'}
@@ -175,7 +175,7 @@ function useBak(){
   bakLayer = L.tileLayer(TILE_BAK.url, TILE_BAK.opt);
   bakLayer.addTo(map);
   bakLayer.bringToBack();
-  /* 备用源也挂了就再试主源一次 */
+  /* 澶囩敤婧愪篃鎸備簡灏卞啀璇曚富婧愪竴娆?*/
   bakLayer.on('tileerror', function(){
     setTimeout(function(){ switched = false; useMain(); }, 3000);
   });
@@ -188,7 +188,7 @@ map.on('zoomend moveend', function(){
   }, 1200);
 });
 
-/* ── WGS84 → GCJ-02（高德底图是火星坐标） ── */
+/* 鈹€鈹€ WGS84 鈫?GCJ-02锛堥珮寰峰簳鍥炬槸鐏槦鍧愭爣锛?鈹€鈹€ */
 const GCJ_A=6378245.0, GCJ_EE=0.00669342162296594323;
 function outOfChina(lng,lat){return lng<72.004||lng>137.8347||lat<0.8293||lat>55.8271;}
 function tLat(x,y){
@@ -215,26 +215,26 @@ function toGcj(lng,lat){
   return [lng+dLng, lat+dLat];
 }
 
-/* ── 数据：全国矿产地公开名录，金/银/砂金/铂矿共 2 万余处 ── */
+/* 鈹€鈹€ 鏁版嵁锛氬叏鍥界熆浜у湴鍏紑鍚嶅綍锛岄噾/閾?鐮傞噾/閾傜熆鍏?2 涓囦綑澶?鈹€鈹€ */
 const D = window.GOLD_DATA;
 const SC = D.scales, US = D.uses, NM = D.names;
 const KIND_STYLE = {
-  '金矿':   {c:'#ffd66b', cls:'k1', label:'岩金'},
-  '砂金':   {c:'#7ee0a8', cls:'k2', label:'砂金'},
-  '银矿':   {c:'#cbd5e1', cls:'k3', label:'银矿'},
-  '铂矿':   {c:'#a78bfa', cls:'k4', label:'铂矿'}
+  '閲戠熆':   {c:'#ffd66b', cls:'k1', label:'宀╅噾'},
+  '鐮傞噾':   {c:'#7ee0a8', cls:'k2', label:'鐮傞噾'},
+  '閾剁熆':   {c:'#cbd5e1', cls:'k3', label:'閾剁熆'},
+  '閾傜熆':   {c:'#a78bfa', cls:'k4', label:'閾傜熆'}
 };
 function kindStyle(t){
   for(const k in KIND_STYLE) if(t.indexOf(k)>=0) return KIND_STYLE[k];
-  return {c:'#94a3b8', cls:'k3', label:'其他'};
+  return {c:'#94a3b8', cls:'k3', label:'鍏朵粬'};
 }
 const RAD = [6,5.5,4.5,3.5,2.6,2.2,2,2.4];
 
-const kindsOn = {'岩金':true,'砂金':true,'银矿':true,'铂矿':true,'其他':true};
+const kindsOn = {'宀╅噾':true,'鐮傞噾':true,'閾剁熆':true,'閾傜熆':true,'鍏朵粬':true};
 
 const pts = D.pts.map(p=>{
   const [la,lo,ni,sc,us,kd] = p;
-  const name = NM[ni] || '(未具名)';
+  const name = NM[ni] || '(鏈叿鍚?';
   const st = kindStyle(kd);
   return {lat:la, lng:lo, name, sc, us, kd, st};
 });
@@ -243,17 +243,17 @@ const total = pts.length;
 const renderer = L.canvas({padding:0.3});
 const layerAll = L.layerGroup().addTo(map);
 
-/* 手机上一次性画两万个点会卡死，改成「只画当前视野里最重要的那批」 */
+/* 鎵嬫満涓婁竴娆℃€х敾涓や竾涓偣浼氬崱姝伙紝鏀规垚銆屽彧鐢诲綋鍓嶈閲庨噷鏈€閲嶈鐨勯偅鎵广€?*/
 const MAXPTS = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ? 700 : 3000;
-const ptsSorted = pts.slice().sort((a,b)=>(a.sc|0)-(b.sc|0));   // 规模大的排前面
+const ptsSorted = pts.slice().sort((a,b)=>(a.sc|0)-(b.sc|0));   // 瑙勬ā澶х殑鎺掑墠闈?
 const popup = L.popup({maxWidth:260});
 let shownN = 0;
 
 function popHtml(p){
   return `<div class="pop"><h4>${p.name}</h4>
     <div style="color:#8fb3dd;font-size:12px;margin-bottom:5px">
-      ${p.kd} · ${SC[p.sc]||'未标注'} · ${US[p.us]||'未标注'}<br>
-      约 ${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}（精度约百米，公开名录坐标）</div></div>`;
+      ${p.kd} 路 ${SC[p.sc]||'鏈爣娉?} 路 ${US[p.us]||'鏈爣娉?}<br>
+      绾?${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}锛堢簿搴︾害鐧剧背锛屽叕寮€鍚嶅綍鍧愭爣锛?/div></div>`;
 }
 
 function renderVisible(){
@@ -279,8 +279,8 @@ function renderVisible(){
     cm.addTo(layerAll);
     shownN++;
   }
-  document.getElementById('cnt').textContent = ' · 全国 ' + total.toLocaleString() + ' 处' +
-    (hit > shownN ? '，这片显示 ' + shownN.toLocaleString() + ' 处（放大看更全）' : '');
+  document.getElementById('cnt').textContent = ' 路 鍏ㄥ浗 ' + total.toLocaleString() + ' 澶? +
+    (hit > shownN ? '锛岃繖鐗囨樉绀?' + shownN.toLocaleString() + ' 澶勶紙鏀惧ぇ鐪嬫洿鍏級' : '');
 }
 
 layerAll.on('click', function(ev){
@@ -296,13 +296,13 @@ map.on('moveend', function(){
 });
 renderVisible();
 
-/* ---------- 城市搜索 ---------- */
+/* ---------- 鍩庡競鎼滅储 ---------- */
 var cityList = (window.CITY_INDEX || []);
 var qEl = document.getElementById('q');
 var sugBox = null;
 
 function normCity(n){
-  return (n || '').replace(/(自治州|地区|盟|市|县|区|省)$/,'');
+  return (n || '').replace(/(鑷不宸瀨鍦板尯|鐩焲甯倈鍘縷鍖簗鐪?$/,'');
 }
 
 function searchCity(kw){
@@ -328,7 +328,7 @@ function showSug(list){
   closeSug();
   if(!list.length){
     document.getElementById('locbox').innerHTML =
-      '没搜到这个地名 · 换个写法试试，比如只写「' + (qEl.value.trim().slice(0,2) || '城市') + '」';
+      '娌℃悳鍒拌繖涓湴鍚?路 鎹釜鍐欐硶璇曡瘯锛屾瘮濡傚彧鍐欍€? + (qEl.value.trim().slice(0,2) || '鍩庡競') + '銆?;
     return;
   }
   sugBox = document.createElement('div');
@@ -351,7 +351,7 @@ function gotoCity(it){
   if(!showMines){
     showMines = true;
     layerAll.addTo(map);
-    document.getElementById('btn2').textContent = '隐藏矿点';
+    document.getElementById('btn2').textContent = '闅愯棌鐭跨偣';
   }
   map.setView([it.c[1], it.c[0]], z);
   if(typeof renderVisible === 'function') renderVisible();
@@ -365,8 +365,8 @@ function gotoCity(it){
       if(!kindsOn[p.kd]) return;
       inView++;
     });
-    box.innerHTML = '已跳到 <b>' + it.n + '</b> · 这一屏有 <b>' + inView + '</b> 处矿点'
-      + (inView ? '' : ' · 这块暂时没录到，换周边城市看看');
+    box.innerHTML = '宸茶烦鍒?<b>' + it.n + '</b> 路 杩欎竴灞忔湁 <b>' + inView + '</b> 澶勭熆鐐?
+      + (inView ? '' : ' 路 杩欏潡鏆傛椂娌″綍鍒帮紝鎹㈠懆杈瑰煄甯傜湅鐪?);
   };
   map.on('moveend', after);
 }
@@ -392,7 +392,7 @@ map.on('movestart', closeSug);
 
 function applyFilter(){ renderVisible(); }
 
-/* ── 底部矿种筛选 chips ── */
+/* 鈹€鈹€ 搴曢儴鐭跨绛涢€?chips 鈹€鈹€ */
 const chips = document.getElementById('chips');
 Object.keys(kindsOn).forEach(k=>{
   const s = document.createElement('span');
@@ -408,21 +408,21 @@ Object.keys(kindsOn).forEach(k=>{
   chips.appendChild(s);
 });
 
-/* ── 方位角转中文方向 ── */
+/* 鈹€鈹€ 鏂逛綅瑙掕浆涓枃鏂瑰悜 鈹€鈹€ */
 function bearing(la1,lo1,la2,lo2){
-  const φ1=la1*Math.PI/180, φ2=la2*Math.PI/180, Δλ=(lo2-lo1)*Math.PI/180;
-  const y=Math.sin(Δλ)*Math.cos(φ2);
-  const x=Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+  const 蠁1=la1*Math.PI/180, 蠁2=la2*Math.PI/180, 螖位=(lo2-lo1)*Math.PI/180;
+  const y=Math.sin(螖位)*Math.cos(蠁2);
+  const x=Math.cos(蠁1)*Math.sin(蠁2)-Math.sin(蠁1)*Math.cos(蠁2)*Math.cos(螖位);
   return (Math.atan2(y,x)*180/Math.PI+360)%360;
 }
 function bearName(la1,lo1,la2,lo2){
   const b=bearing(la1,lo1,la2,lo2);
-  const d=['正北','东北偏北','东北','东北偏东','正东','东南偏东','东南','东南偏南',
-           '正南','西南偏南','西南','西南偏西','正西','西北偏西','西北','西北偏北'];
+  const d=['姝ｅ寳','涓滃寳鍋忓寳','涓滃寳','涓滃寳鍋忎笢','姝ｄ笢','涓滃崡鍋忎笢','涓滃崡','涓滃崡鍋忓崡',
+           '姝ｅ崡','瑗垮崡鍋忓崡','瑗垮崡','瑗垮崡鍋忚タ','姝ｈタ','瑗垮寳鍋忚タ','瑗垮寳','瑗垮寳鍋忓寳'];
   return d[Math.round(b/22.5)%16];
 }
 
-/* ── 指南针 ── */
+/* 鈹€鈹€ 鎸囧崡閽?鈹€鈹€ */
 const arw = document.getElementById('hdgarw');
 function onOrient(e){
   let h = null;
@@ -451,20 +451,20 @@ function startCompass(){
 }
 startCompass();
 
-/* ── 定位 ── */
+/* 鈹€鈹€ 瀹氫綅 鈹€鈹€ */
 let me=null, meLbl=null, acc=null;
 const locbox = document.getElementById('locbox');
 document.getElementById('btn').onclick = ()=>{
   startCompass();
-  if(!navigator.geolocation){ locbox.textContent='这个浏览器没有定位能力'; return; }
-  locbox.innerHTML = '正在定位…手机上 GPS 要几秒，电脑靠 WiFi 定位误差会大得多';
+  if(!navigator.geolocation){ locbox.textContent='杩欎釜娴忚鍣ㄦ病鏈夊畾浣嶈兘鍔?; return; }
+  locbox.innerHTML = '姝ｅ湪瀹氫綅鈥︽墜鏈轰笂 GPS 瑕佸嚑绉掞紝鐢佃剳闈?WiFi 瀹氫綅璇樊浼氬ぇ寰楀';
   navigator.geolocation.watchPosition(pos=>{
     const {latitude:la, longitude:lo, accuracy:ac} = pos.coords;
     if(!me){
       acc = L.circle([la,lo],{radius:ac,color:'#4da3ff',weight:1,fillOpacity:.1,fillColor:'#4da3ff'}).addTo(map);
       me = L.circleMarker([la,lo],{radius:9,color:'#fff',weight:3,fillColor:'#ff3b6b',fillOpacity:1,className:'memark'}).addTo(map)
-            .bindPopup('我在这儿');
-      meLbl = L.marker([la,lo],{icon:L.divIcon({className:'melbl',html:'我在这儿',iconSize:[74,24],iconAnchor:[-8,14]}),interactive:false}).addTo(map);
+            .bindPopup('鎴戝湪杩欏効');
+      meLbl = L.marker([la,lo],{icon:L.divIcon({className:'melbl',html:'鎴戝湪杩欏効',iconSize:[74,24],iconAnchor:[-8,14]}),interactive:false}).addTo(map);
       me.bringToFront(); meLbl.getElement && setTimeout(()=>meLbl.getElement()&&meLbl.getElement().style.setProperty('z-index',900),0);
       map.setView([la,lo], Math.max(map.getZoom(),12));
     } else {
@@ -480,16 +480,16 @@ document.getElementById('btn').onclick = ()=>{
       const d = 2*R*Math.asin(Math.sqrt(a));
       if(d<bd){bd=d;best=p;}
     }
-    locbox.innerHTML = `我在这儿 <b>${la.toFixed(5)}, ${lo.toFixed(5)}</b> · 精度 <b>±${Math.round(ac)} 米</b><br>
-      最近的金矿点：<b>${best.name}</b>（${best.kd}）直线约 <b>${bd.toFixed(1)} 公里</b> · 方向 <b>${bearName(la,lo,best.lat,best.lng)}</b>
-      <span style="color:#6f88a8">（名录坐标精度约百米，能给你方向，不能当矿口位置）</span>`;
+    locbox.innerHTML = `鎴戝湪杩欏効 <b>${la.toFixed(5)}, ${lo.toFixed(5)}</b> 路 绮惧害 <b>卤${Math.round(ac)} 绫?/b><br>
+      鏈€杩戠殑閲戠熆鐐癸細<b>${best.name}</b>锛?{best.kd}锛夌洿绾跨害 <b>${bd.toFixed(1)} 鍏噷</b> 路 鏂瑰悜 <b>${bearName(la,lo,best.lat,best.lng)}</b>
+      <span style="color:#6f88a8">锛堝悕褰曞潗鏍囩簿搴︾害鐧剧背锛岃兘缁欎綘鏂瑰悜锛屼笉鑳藉綋鐭垮彛浣嶇疆锛?/span>`;
   }, err=>{
-    const m = {1:'你拒绝了定位权限', 2:'拿不到位置信号', 3:'定位超时了'};
-    locbox.textContent = (m[err.code]||'定位失败') + ' · ' + err.message;
+    const m = {1:'浣犳嫆缁濅簡瀹氫綅鏉冮檺', 2:'鎷夸笉鍒颁綅缃俊鍙?, 3:'瀹氫綅瓒呮椂浜?};
+    locbox.textContent = (m[err.code]||'瀹氫綅澶辫触') + ' 路 ' + err.message;
   }, {enableHighAccuracy:true, maximumAge:2000, timeout:15000});
 };
 
-/* ── 矿点总开关 ── */
+/* 鈹€鈹€ 鐭跨偣鎬诲紑鍏?鈹€鈹€ */
 let showMines = true;
 document.getElementById('btn5').onclick = function(){
   var u = location.pathname + '?t=' + Date.now();
@@ -498,14 +498,14 @@ document.getElementById('btn5').onclick = function(){
 document.getElementById('btn2').onclick = ()=>{
   showMines = !showMines;
   if(showMines){ layerAll.addTo(map); renderVisible(); } else map.removeLayer(layerAll);
-  document.getElementById('btn2').textContent = showMines ? '隐藏矿点' : '显示矿点';
+  document.getElementById('btn2').textContent = showMines ? '闅愯棌鐭跨偣' : '鏄剧ず鐭跨偣';
 };
 
-/* ══════ 我的标记（只存本机浏览器，不上传） ══════ */
+/* 鈺愨晲鈺愨晲鈺愨晲 鎴戠殑鏍囪锛堝彧瀛樻湰鏈烘祻瑙堝櫒锛屼笉涓婁紶锛?鈺愨晲鈺愨晲鈺愨晲 */
 var MK_KEY = 'goldmap.marks.v1';
 var marks = [];
 try { marks = JSON.parse(localStorage.getItem(MK_KEY) || '[]') || []; } catch(e){ marks = []; }
-/* 删除名单：删过的 id 记下来，从别人的设备同步回来时也不会复活 */
+/* 鍒犻櫎鍚嶅崟锛氬垹杩囩殑 id 璁颁笅鏉ワ紝浠庡埆浜虹殑璁惧鍚屾鍥炴潵鏃朵篃涓嶄細澶嶆椿 */
 var DEL_KEY = 'goldmap.del.v1';
 var deleted = [];
 try { deleted = JSON.parse(localStorage.getItem(DEL_KEY) || '[]') || []; } catch(e){ deleted = []; }
@@ -519,7 +519,7 @@ window.__addDel = function(id){
 
 var markLayer = L.layerGroup().addTo(map);
 
-/* 本机身份：用来判断哪些标记是我自己传的 */
+/* 鏈満韬唤锛氱敤鏉ュ垽鏂摢浜涙爣璁版槸鎴戣嚜宸变紶鐨?*/
 var MY_ID = '';
 try { MY_ID = localStorage.getItem('mk_uid') || ''; } catch(e){}
 if(!MY_ID){
@@ -527,7 +527,7 @@ if(!MY_ID){
   try { localStorage.setItem('mk_uid', MY_ID); } catch(e){}
 }
 function isMine(m){ return !m.o || m.o === MY_ID; }
-/* 管理员模式：本机手动开启后可以删任何人的点（只影响这台手机） */
+/* 绠＄悊鍛樻ā寮忥細鏈満鎵嬪姩寮€鍚悗鍙互鍒犱换浣曚汉鐨勭偣锛堝彧褰卞搷杩欏彴鎵嬫満锛?*/
 var IS_ADMIN = false;
 try { IS_ADMIN = localStorage.getItem('mk_admin') === '1'; } catch(e){}
 function isAdmin(){ return IS_ADMIN; }
@@ -536,7 +536,7 @@ var adding = false;
 
 function saveMarks(){
   try { localStorage.setItem(MK_KEY, JSON.stringify(marks)); }
-  catch(e){ alert('存不下了，可能是隐私模式或者空间满了'); }
+  catch(e){ alert('瀛樹笉涓嬩簡锛屽彲鑳芥槸闅愮妯″紡鎴栬€呯┖闂存弧浜?); }
 }
 
 function drawMarks(){
@@ -555,7 +555,7 @@ function drawMarks(){
   });
 }
 
-/* 连点左上标题 5 下，切换管理员模式 */
+/* 杩炵偣宸︿笂鏍囬 5 涓嬶紝鍒囨崲绠＄悊鍛樻ā寮?*/
 (function(){
   var t = document.getElementById('title'), n = 0, tm = null;
   if(!t) return;
@@ -566,7 +566,7 @@ function drawMarks(){
       IS_ADMIN = !IS_ADMIN;
       try { localStorage.setItem('mk_admin', IS_ADMIN ? '1' : '0'); } catch(e){}
       renderList();
-      alert(IS_ADMIN ? '管理员模式已开启：可以删所有人的点' : '管理员模式已关闭');
+      alert(IS_ADMIN ? '绠＄悊鍛樻ā寮忓凡寮€鍚細鍙互鍒犳墍鏈変汉鐨勭偣' : '绠＄悊鍛樻ā寮忓凡鍏抽棴');
     }
   });
 })();
@@ -575,9 +575,9 @@ var mkbox = document.getElementById('marks');
 var mklist = document.getElementById('mklist');
 
 function renderList(){
-  if(mkChip) mkChip.textContent = '📍 我的标记 ' + marks.length;
+  if(mkChip) mkChip.textContent = '馃搷 鎴戠殑鏍囪 ' + marks.length;
   if(!marks.length){
-    mklist.innerHTML = '<div class="mktip">还没有标记。点右边「✚ 添加标记」，再点地图上你要标的地方。</div>';
+    mklist.innerHTML = '<div class="mktip">杩樻病鏈夋爣璁般€傜偣鍙宠竟銆屸湚 娣诲姞鏍囪銆嶏紝鍐嶇偣鍦板浘涓婁綘瑕佹爣鐨勫湴鏂广€?/div>';
     return;
   }
   mklist.innerHTML = '';
@@ -585,13 +585,13 @@ function renderList(){
     var d = document.createElement('div');
     d.className = 'mk';
     var mine = isMine(m);
-    d.innerHTML = (canDel(m) ? '<u data-del="'+m.id+'">删</u>' : '') +
-      '<b>'+m.name+'</b>' + (mine ? '' : '<em>别人的</em>') +
-      '<i>'+(m.note || '（无备注）')+' · '+m.lat+', '+m.lng+'</i>';
+    d.innerHTML = (canDel(m) ? '<u data-del="'+m.id+'">鍒?/u>' : '') +
+      '<b>'+m.name+'</b>' + (mine ? '' : '<em>鍒汉鐨?/em>') +
+      '<i>'+(m.note || '锛堟棤澶囨敞锛?)+' 路 '+m.lat+', '+m.lng+'</i>';
     d.onclick = function(ev){
       if(ev.target.dataset.del){
         var id = ev.target.dataset.del;
-        if(confirm('删掉「'+m.name+'」？')){
+        if(confirm('鍒犳帀銆?+m.name+'銆嶏紵')){
           window.__addDel(id);
           marks = marks.filter(function(x){ return x.id !== id; });
           saveMarks(); drawMarks(); renderList();
@@ -613,20 +613,20 @@ var addhint = document.getElementById('addhint');
 btn3.onclick = function(){
   adding = !adding;
   btn3.classList.toggle('on', adding);
-  btn3.textContent = adding ? '取消添加' : '✚ 添加标记';
+  btn3.textContent = adding ? '鍙栨秷娣诲姞' : '鉁?娣诲姞鏍囪';
   addhint.classList.toggle('show', adding);
   map.getContainer().style.cursor = adding ? 'crosshair' : '';
   if(adding) mkbox.classList.remove('show');
 };
 
 function openMarkDialog(latlng){
-  var name = prompt('给这个点起个名字', '我的点');
+  var name = prompt('缁欒繖涓偣璧蜂釜鍚嶅瓧', '鎴戠殑鐐?);
   if(name === null) return;
-  var note = prompt('备注（可以留空）', '');
+  var note = prompt('澶囨敞锛堝彲浠ョ暀绌猴級', '');
   if(note === null) note = '';
   var m = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-    name: (name||'').trim() || '我的点',
+    name: (name||'').trim() || '鎴戠殑鐐?,
     note: (note||'').trim(),
     lat: +latlng.lat.toFixed(5),
     lng: +latlng.lng.toFixed(5),
@@ -642,7 +642,7 @@ map.on('click', function(e){
   if(!adding) return;
   adding = false;
   btn3.classList.remove('on');
-  btn3.textContent = '✚ 添加标记';
+  btn3.textContent = '鉁?娣诲姞鏍囪';
   addhint.classList.remove('show');
   map.getContainer().style.cursor = '';
   openMarkDialog(e.latlng);
@@ -651,7 +651,7 @@ map.on('click', function(e){
 document.getElementById('mkclose').onclick = function(){ mkbox.classList.remove('show'); };
 
 document.getElementById('mkexp').onclick = function(){
-  if(!marks.length){ alert('还没有标记可以导出'); return; }
+  if(!marks.length){ alert('杩樻病鏈夋爣璁板彲浠ュ鍑?); return; }
   var blob = new Blob([JSON.stringify({v:1, marks:marks}, null, 1)], {type:'application/json'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -669,7 +669,7 @@ mkfile.onchange = function(){
     try{
       var j = JSON.parse(r.result);
       var arr = Array.isArray(j) ? j : (j.marks || []);
-      if(!arr.length) throw new Error('里面没有标记');
+      if(!arr.length) throw new Error('閲岄潰娌℃湁鏍囪');
       var have = {};
       marks.forEach(function(m){ have[m.id] = 1; });
       var n = 0;
@@ -678,7 +678,7 @@ mkfile.onchange = function(){
         if(m.id && have[m.id]) return;
         marks.push({
           id: m.id || (Date.now().toString(36)+Math.random().toString(36).slice(2,6)),
-          name: m.name || '我的点',
+          name: m.name || '鎴戠殑鐐?,
           note: m.note || '',
           lat: m.lat, lng: m.lng,
           t: m.t || Date.now()
@@ -686,19 +686,19 @@ mkfile.onchange = function(){
         n++;
       });
       saveMarks(); drawMarks(); renderList();
-      alert('导入 ' + n + ' 条');
-    }catch(err){ alert('文件读不了：' + err.message); }
+      alert('瀵煎叆 ' + n + ' 鏉?);
+    }catch(err){ alert('鏂囦欢璇讳笉浜嗭細' + err.message); }
     mkfile.value = '';
   };
   r.readAsText(f);
 };
 
-/* 底部加一个「我的标记」chip 开关列表 */
+/* 搴曢儴鍔犱竴涓€屾垜鐨勬爣璁般€峜hip 寮€鍏冲垪琛?*/
 var mkChip = document.createElement('span');
 mkChip.className = 'chip';
 mkChip.style.borderColor = '#b53b6b';
 mkChip.style.color = '#ff9ec2';
-mkChip.textContent = '📍 我的标记';
+mkChip.textContent = '馃搷 鎴戠殑鏍囪';
 chips.appendChild(mkChip);
 mkChip.onclick = function(){
   renderList();
@@ -736,13 +736,13 @@ renderList();
 
 <div id="tipmask">
   <div id="tipbox">
-    <h3>祝老板生意兴隆<br>财源广进 日进斗金</h3>
-    <p>随意就好 · 一分钱也是心意<br>小满都记着</p>
-    <a class="tipgo" id="tipgo" href="https://afdian.com/a/2511-3090" target="_blank" rel="noopener">直接赞助（微信 / 支付宝）</a>
-    <img class="qr" id="tipqr" src="qr.png?v=4" alt="微信赞助码" onerror="this.style.display='none'">
-    <div class="qrtip" id="qrtip">微信扫一扫这张图，赞助小满<div style="margin-top:4px;color:#8fa8c8">手机长按图片可保存，或点下方保存</div></div>
-    <a class="qrdl" id="qrdl" href="qr.png" download="赞助码.png">保存赞助码</a>
-    <button id="tipno">暂不投喂</button>
+    <h3>绁濊€佹澘鐢熸剰鍏撮殕<br>璐㈡簮骞胯繘 鏃ヨ繘鏂楅噾</h3>
+    <p>闅忔剰灏卞ソ 路 涓€鍒嗛挶涔熸槸蹇冩剰<br>灏忔弧閮借鐫€</p>
+    <a class="tipgo" id="tipgo" href="https://afdian.com/a/2511-3090" target="_blank" rel="noopener">鐩存帴璧炲姪锛堝井淇?/ 鏀粯瀹濓級</a>
+    <img class="qr" id="tipqr" src="qr.png?v=4" alt="寰俊璧炲姪鐮? onerror="this.style.display='none'">
+    <div class="qrtip" id="qrtip">寰俊鎵竴鎵繖寮犲浘锛岃禐鍔╁皬婊?div style="margin-top:4px;color:#8fa8c8">鎵嬫満闀挎寜鍥剧墖鍙繚瀛橈紝鎴栫偣涓嬫柟淇濆瓨</div></div>
+    <a class="qrdl" id="qrdl" href="qr.png" download="璧炲姪鐮?png">淇濆瓨璧炲姪鐮?/a>
+    <button id="tipno">鏆備笉鎶曞杺</button>
   </div>
 </div>
 
