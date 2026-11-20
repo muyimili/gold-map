@@ -728,6 +728,10 @@ mkChip.onclick = function(){
   mkbox.classList.toggle('show');
 };
 
+/* 「反馈」挪到最末位 */
+var fbEl = document.getElementById('fb4');
+if(fbEl && chips) chips.appendChild(fbEl);
+
 drawMarks();
 renderList();
 </script>
