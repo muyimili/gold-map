@@ -137,7 +137,7 @@
 </div>
 <input type="file" id="mkfile" accept=".json,application/json" style="display:none">
 <div id="panel">
-  <div id="chips"><button id="btn4">☕ 投喂</button></div>
+  <div id="chips"><button id="btn4">☕ 投喂</button><button id="fb4">💬 反馈</button></div>
   <div class="loc" id="locbox">还没定位 · 点右上角「定位我」，浏览器会问你要权限，允许了才准</div>
 </div>
 
@@ -754,8 +754,52 @@ renderList();
   #tipgo{display:block;width:100%;margin:2px 0 4px;border-radius:12px;padding:12px 0;font-size:15px;
     background:#ff5c8a;color:#2a0a16;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(255,92,138,.3)}
   #tipno{background:#1b2a40;color:#adc4e0;border:1px solid #2f4a70}
+  #fb4{display:inline-block;vertical-align:top;margin:3px 4px 0 0;padding:3px 9px;border-radius:20px;
+    background:#122b3a;border:1px solid #3b8ab5;color:#a9dcff;font-size:12px;line-height:1.5;
+    font-family:inherit;cursor:pointer}
+  #fbmask{position:fixed;inset:0;z-index:3100;background:rgba(4,8,16,.78);display:none;
+    align-items:center;justify-content:center;padding:16px}
+  #fbmask.show{display:flex}
+  #fbbox{width:100%;max-width:340px;background:#131c2c;border:1px solid #2f4a70;border-radius:16px;
+    padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+  #fbbox h3{margin:0 0 10px;font-size:15px;color:#a9dcff}
+  #fbtext{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;background:#0d1521;
+    border:1px solid #2f4a70;border-radius:10px;color:#dce9ff;font-size:13px;font-family:inherit;
+    padding:9px 10px;line-height:1.6;outline:none}
+  #fbtext:focus{border-color:#3b8ab5}
+  #fbimgrow{margin-top:9px;display:flex;align-items:center;gap:8px;font-size:12px;color:#8fa8c8}
+  #fbfile{display:none}
+  #fbpick{background:#1b2a40;border:1px solid #2f4a70;color:#adc4e0;border-radius:9px;padding:6px 10px;
+    font-size:12px;font-family:inherit;cursor:pointer}
+  #fbthumb{max-width:64px;max-height:64px;border-radius:8px;display:none;border:1px solid #2f4a70}
+  #fbbtns{margin-top:12px;display:flex;gap:8px}
+  #fbbtns button{flex:1;border-radius:12px;padding:10px 0;font-size:14px;border:none;font-family:inherit;cursor:pointer}
+  #fbsend{background:#3b8ab5;color:#04131c;font-weight:600}
+  #fbsend:disabled{opacity:.6}
+  #fbcancel{background:#1b2a40;color:#adc4e0;border:1px solid #2f4a70!important}
+  #fbmsg{margin-top:9px;font-size:12px;color:#8fb3dd;min-height:16px;line-height:1.5}
+  #fbmsg.ok{color:#7ee0b0}
+  #fbmsg.err{color:#ff9ec2}
 </style>
 
+
+<div id="fbmask">
+  <div id="fbbox">
+    <h3>说点什么</h3>
+    <textarea id="fbtext" placeholder="哪里的矿点不对、哪里不好用，都可以写"></textarea>
+    <div id="fbimgrow">
+      <button id="fbpick">＋ 选张图</button>
+      <img id="fbthumb" alt="">
+      <span id="fbname"></span>
+    </div>
+    <input type="file" id="fbfile" accept="image/*">
+    <div id="fbbtns">
+      <button id="fbcancel">取消</button>
+      <button id="fbsend">发送</button>
+    </div>
+    <div id="fbmsg"></div>
+  </div>
+</div>
 
 <div id="tipmask">
   <div id="tipbox">
@@ -801,6 +845,85 @@ renderList();
   };
   mask.onclick = function(ev){ if(ev.target === mask) mask.classList.remove('show'); };
   setTimeout(openTip, 600);
+})();
+</script>
+<script>
+(function(){
+  var TOPIC = 'goldmap-fb-3c9a71e5d84b';
+  var mask = document.getElementById('fbmask');
+  var ta = document.getElementById('fbtext');
+  var file = document.getElementById('fbfile');
+  var thumb = document.getElementById('fbthumb');
+  var fname = document.getElementById('fbname');
+  var msg = document.getElementById('fbmsg');
+  var send = document.getElementById('fbsend');
+  var imgUrl = '';
+
+  function setMsg(t, cls){ msg.textContent = t || ''; msg.className = cls || ''; }
+
+  document.getElementById('fb4').onclick = function(){
+    mask.classList.add('show');
+    setMsg('');
+  };
+  document.getElementById('fbcancel').onclick = function(){
+    mask.classList.remove('show');
+  };
+  mask.onclick = function(ev){ if(ev.target === mask) mask.classList.remove('show'); };
+  document.getElementById('fbpick').onclick = function(){ file.click(); };
+
+  file.onchange = function(){
+    var f = file.files && file.files[0];
+    imgUrl = ''; thumb.style.display = 'none'; fname.textContent = '';
+    if(!f) return;
+    if(f.size > 8*1024*1024){ setMsg('图太大了，8M以内的好上传', 'err'); file.value=''; return; }
+    fname.textContent = f.name;
+    var fr = new FileReader();
+    fr.onload = function(){ thumb.src = fr.result; thumb.style.display = 'block'; };
+    fr.readAsDataURL(f);
+  };
+
+  function uploadImg(f){
+    var fd = new FormData();
+    fd.append('reqtype', 'fileupload');
+    fd.append('time', '72h');
+    fd.append('fileToUpload', f);
+    return fetch('https://litterbox.catbox.moe/resources/internals/api.php', {method:'POST', body:fd})
+      .then(function(r){ if(!r.ok) throw new Error('图片上传失败 ' + r.status); return r.text(); })
+      .then(function(t){
+        t = (t||'').trim();
+        if(!/^https?:/i.test(t)) throw new Error('图片上传失败');
+        return t;
+      });
+  }
+
+  function pushFeedback(text, url){
+    var body = text + (url ? ('\n' + url) : '');
+    return fetch('https://ntfy.sh/' + TOPIC, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain; charset=utf-8', 'Title':'gold-map feedback'},
+      body: body
+    }).then(function(r){ if(!r.ok) throw new Error('发送失败 ' + r.status); return true; });
+  }
+
+  send.onclick = function(){
+    var text = (ta.value || '').trim();
+    var f = file.files && file.files[0];
+    if(!text && !f){ setMsg('写两句或者选张图呀', 'err'); return; }
+    send.disabled = true;
+    setMsg(f ? '正在上传图片…' : '正在发送…');
+    var step = f ? uploadImg(f).then(function(u){ imgUrl = u; setMsg('正在发送…'); return u; }) : Promise.resolve('');
+    step
+      .then(function(u){ return pushFeedback(text || '(只有图)', u); })
+      .then(function(){
+        setMsg('收到啦，谢谢', 'ok');
+        ta.value = ''; file.value = ''; thumb.style.display='none'; thumb.src=''; fname.textContent='';
+        setTimeout(function(){ mask.classList.remove('show'); setMsg(''); send.disabled = false; }, 1200);
+      })
+      .catch(function(e){
+        setMsg((e && e.message) || '没发出去，再试一次', 'err');
+        send.disabled = false;
+      });
+  };
 })();
 </script>
 <script src="sync.js"></script>
