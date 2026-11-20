@@ -25,15 +25,15 @@
   .chip.k4.on{background:#241b3a;border-color:#a78bfa;color:#c4b5fd}
   .loc{margin-top:8px;padding-top:8px;border-top:1px dashed #26374f;color:#9fb6d6;font-size:12px}
   .loc b{color:#7ee0a8}
-  #btn{display:inline-block;box-sizing:border-box;background:#1b3a6b;border:1px solid #3b6bb5;
+  #btn{position:absolute;right:10px;top:76px;z-index:960;background:#1b3a6b;border:1px solid #3b6bb5;
     color:#dce9ff;border-radius:12px;padding:8px 12px;font-size:13px;}
-  #btn2{position:absolute;right:10px;top:112px;z-index:960;background:#1b3a6b;border:1px solid #3b6bb5;
+  #btn2{position:absolute;right:10px;top:122px;z-index:960;background:#1b3a6b;border:1px solid #3b6bb5;
     color:#dce9ff;border-radius:12px;padding:8px 12px;font-size:13px}
-  #btn3{position:absolute;right:10px;top:158px;z-index:960;background:#6b1b3a;border:1px solid #b53b6b;
+  #btn3{position:absolute;right:10px;top:168px;z-index:960;background:#6b1b3a;border:1px solid #b53b6b;
     color:#ffd6e6;border-radius:12px;padding:8px 12px;font-size:13px}
   #btn3.on{background:#ff5c8a;border-color:#ffc2d6;color:#2a0a16;font-weight:600}
-  #btn5{position:absolute;right:10px;top:204px;z-index:960;background:#16382c;border:1px solid #3b8a6b;
-    color:#c8f3e0;border-radius:12px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit}  #marks{position:absolute;right:10px;top:250px;width:236px;max-height:52vh;overflow:auto;z-index:900;
+  #btn5{position:absolute;right:10px;top:214px;z-index:960;background:#16382c;border:1px solid #3b8a6b;
+    color:#c8f3e0;border-radius:12px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit}  #marks{position:absolute;right:10px;top:260px;width:236px;max-height:52vh;overflow:auto;z-index:900;
     background:rgba(20,12,20,.95);border:1px solid #4a2238;border-radius:12px;padding:8px;font-size:12px;
     display:none}
   #marks.show{display:block}
@@ -97,11 +97,12 @@
     #searchwrap{top:44px;left:8px;right:96px;width:auto;max-width:none;transform:none}
     #q{font-size:12px;padding:6px 12px}
     #qbtn{font-size:12px;padding:6px 10px}
-    #topright{left:auto;right:8px;top:86px}
-    #btn2{top:216px}
-    #btn3{top:262px}
-    #btn5{top:308px}
-    #marks{top:356px;width:auto;left:8px;right:8px}
+    #compass{right:8px;top:44px;width:56px;height:56px}
+    #btn{top:110px}
+    #btn2{top:156px}
+    #btn3{top:202px}
+    #btn5{top:248px}
+    #marks{top:296px;width:auto;left:8px;right:8px}
     #compass .arw{margin-top:-13px;border-bottom:13px solid #4da3ff}
   }
 </style>
@@ -109,14 +110,12 @@
 <body>
 <div id="map"></div>
 <div id="title">中国金矿分布 <b>全国矿产地 2 万+ 处</b><span id="cnt" style="color:#8fb3dd"></span></div>
-<div id="topright">
 <div id="compass">
   <div class="nd">N</div><div class="sd">S</div><div class="wd">W</div><div class="ed">E</div>
   <div class="dt"></div>
   <div class="arw" id="hdgarw"></div>
 </div>
 <button id="btn">定位我</button>
-</div>
 <button id="btn2">隐藏矿点</button>
 <div id="searchwrap">
   <input id="q" type="search" placeholder="搜城市，比如 重庆 / 中山" autocomplete="off">
