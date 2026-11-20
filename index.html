@@ -457,8 +457,25 @@ startCompass();
 /* ── 定位 ── */
 let me=null, meLbl=null, acc=null;
 const locbox = document.getElementById('locbox');
-document.getElementById('btn6').onclick = function(){
-  locbox.innerHTML = '定位被浏览器拦了的话：<br>① 点地址栏左边的 🔒 或 ⓘ → 找到「位置信息」→ 改成「允许」<br>② 或者浏览器设置 → 网站设置 → 位置信息 → 把 muyimili.github.io 删掉<br>③ 弄完再点「定位我」';
+document.getElementById('btn6').onclick = async function(){
+  // 先看当前权限状态，能直接放行就直接定位，别再让用户找设置
+  let st = 'prompt';
+  try {
+    if (navigator.permissions && navigator.permissions.query) {
+      const r = await navigator.permissions.query({name:'geolocation'});
+      st = r.state;
+    }
+  } catch(e){}
+  if (st !== 'denied') {
+    locbox.textContent = '正在请求定位…';
+    document.getElementById('btn').click();
+    return;
+  }
+  locbox.innerHTML = '浏览器已经记住「拒绝」了，网页没法自己改回来，只能手动开：<br>'
+    + '① 点地址栏左边的 🔒 或 ⓘ → 位置信息 → 改成「允许」<br>'
+    + '② 找不到就去 浏览器设置 → 网站设置 → 位置信息 → 把 muyimili.github.io 删掉<br>'
+    + '③ 弄完再点「定位我」'
+    + '<br><span style="color:#ffb46b">（这是浏览器的限制，网页跳不过去）</span>';
 };
 document.getElementById('btn').onclick = ()=>{
   startCompass();
