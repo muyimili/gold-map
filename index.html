@@ -115,9 +115,49 @@
 <script>
 const map = L.map('map', {zoomControl:false, attributionControl:false, preferCanvas:true}).setView([34.5, 108], 5);
 
-L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}', {
-  subdomains:['1','2','3','4'], maxZoom: 18, className:'darktile'
-}).addTo(map);
+/* ── 底图：主用高德，失败自动切腾讯（两者都是 GCJ-02，坐标不用改） ── */
+const TILE_MAIN = {
+  url:'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
+  opt:{subdomains:['1','2','3','4'], maxZoom:18, className:'darktile'}
+};
+const TILE_BAK = {
+  url:'https://rt{s}.map.gtimg.com/tile?z={z}&x={x}&y={y}&type=vector&styleid=3',
+  opt:{subdomains:['0','1','2','3'], maxZoom:18, className:'darktile'}
+};
+let mainLayer = null, bakLayer = null, tileErr = 0, switched = false;
+
+function useMain(){
+  if(bakLayer){ map.removeLayer(bakLayer); bakLayer = null; }
+  if(mainLayer) map.removeLayer(mainLayer);
+  tileErr = 0;
+  mainLayer = L.tileLayer(TILE_MAIN.url, TILE_MAIN.opt);
+  mainLayer.on('tileerror', function(){
+    if(switched) return;
+    tileErr++;
+    if(tileErr >= 6) useBak();
+  });
+  mainLayer.addTo(map);
+  mainLayer.bringToBack();
+}
+function useBak(){
+  if(switched) return;
+  switched = true;
+  if(mainLayer){ map.removeLayer(mainLayer); mainLayer = null; }
+  bakLayer = L.tileLayer(TILE_BAK.url, TILE_BAK.opt);
+  bakLayer.addTo(map);
+  bakLayer.bringToBack();
+  /* 备用源也挂了就再试主源一次 */
+  bakLayer.on('tileerror', function(){
+    setTimeout(function(){ switched = false; useMain(); }, 3000);
+  });
+}
+useMain();
+map.on('zoomend moveend', function(){
+  if(switched) return;
+  setTimeout(function(){
+    if(!switched && tileErr >= 6) useBak();
+  }, 1200);
+});
 
 /* ── WGS84 → GCJ-02（高德底图是火星坐标） ── */
 const GCJ_A=6378245.0, GCJ_EE=0.00669342162296594323;
