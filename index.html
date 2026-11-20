@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -25,8 +25,9 @@
   .chip.k4.on{background:#241b3a;border-color:#a78bfa;color:#c4b5fd}
   .loc{margin-top:8px;padding-top:8px;border-top:1px dashed #26374f;color:#9fb6d6;font-size:12px}
   .loc b{color:#7ee0a8}
-  #btn{position:absolute;right:10px;top:76px;z-index:960;background:#1b3a6b;border:1px solid #3b6bb5;
+  #btn{position:absolute;right:52px;top:76px;z-index:960;background:#1b3a6b;border:1px solid #3b6bb5;
     color:#dce9ff;border-radius:12px;padding:8px 12px;font-size:13px;}
+  #btn6{position:absolute;right:10px;top:76px;z-index:960;width:36px;height:34px;background:#1b3a6b;border:1px solid #3b6bb5;color:#dce9ff;border-radius:12px;font-size:15px;line-height:1;padding:0;cursor:pointer;font-family:inherit}
   #btn2{position:absolute;right:10px;top:122px;z-index:960;background:#1b3a6b;border:1px solid #3b6bb5;
     color:#dce9ff;border-radius:12px;padding:8px 12px;font-size:13px}
   #btn3{position:absolute;right:10px;top:168px;z-index:960;background:#6b1b3a;border:1px solid #b53b6b;
@@ -98,7 +99,8 @@
     #q{font-size:12px;padding:6px 12px}
     #qbtn{font-size:12px;padding:6px 10px}
     #compass{right:8px;top:8px;width:52px;height:52px}
-    #btn{top:84px}
+    #btn{top:84px;right:52px}
+    #btn6{top:84px;width:36px;height:32px}
     #btn2{top:130px}
     #btn3{top:176px}
     #btn5{top:222px}
@@ -116,6 +118,7 @@
   <div class="arw" id="hdgarw"></div>
 </div>
 <button id="btn">瀹氫綅鎴?/button>
+<button id="btn6" title="定位权限说明">🔓</button>
 <button id="btn2">闅愯棌鐭跨偣</button>
 <div id="searchwrap">
   <input id="q" type="search" placeholder="鎼滃煄甯傦紝姣斿 閲嶅簡 / 涓北" autocomplete="off">
@@ -454,6 +457,9 @@ startCompass();
 /* 鈹€鈹€ 瀹氫綅 鈹€鈹€ */
 let me=null, meLbl=null, acc=null;
 const locbox = document.getElementById('locbox');
+document.getElementById('btn6').onclick = function(){
+  locbox.innerHTML = '定位被浏览器拦了的话：<br>① 点地址栏左边的 🔒 或 ⓘ → 找到「位置信息」→ 改成「允许」<br>② 或者浏览器设置 → 网站设置 → 位置信息 → 把 muyimili.github.io 删掉<br>③ 弄完再点「定位我」';
+};
 document.getElementById('btn').onclick = ()=>{
   startCompass();
   if(!navigator.geolocation){ locbox.textContent='杩欎釜娴忚鍣ㄦ病鏈夊畾浣嶈兘鍔?; return; }
