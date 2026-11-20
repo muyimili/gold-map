@@ -49,6 +49,18 @@
   .mk u{cursor:pointer;color:#ef6a8a;text-decoration:none;position:absolute;right:6px;top:6px;
     padding:0 4px;line-height:1.4}
   .mktip{color:#9fb6d6;font-size:12px;line-height:1.6}
+  .mk s{color:#7fd8a8;font-size:11px;text-decoration:none;display:block;margin-top:2px}
+  #near{position:absolute;right:10px;top:260px;width:250px;max-height:52vh;overflow:auto;z-index:900;
+    background:rgba(16,20,28,.96);border:1px solid #2b4a6b;border-radius:12px;padding:8px;font-size:12px;
+    display:none}
+  #near.show{display:block}
+  #near .hd{color:#9ecbff;font-size:12px;margin-bottom:6px;display:flex;justify-content:space-between}
+  #near .hd span{cursor:pointer;color:#8fb3dd}
+  #near .nr{padding:6px;border-bottom:1px dashed #24344a;cursor:pointer;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis}
+  #near .nr:hover{background:#12233a}
+  #near .nr b{color:#ffd66b;font-weight:600}
+  #near .nr i{color:#7d8fa8;font-size:11px;font-style:normal;display:block;margin-top:2px}
   #marks .ops{margin-top:7px;padding-top:7px;border-top:1px dashed #3a2434;display:flex;gap:6px}
   #marks .ops button{flex:1;background:#2a1524;border:1px solid #4a2238;color:#ffd6e6;
     border-radius:8px;padding:5px 0;font-size:12px}
@@ -105,6 +117,7 @@
     #btn3{top:176px}
     #btn5{top:222px}
     #marks{top:270px;width:auto;left:8px;right:8px}
+    #near{top:270px;width:auto;left:8px;right:8px}
     #compass .arw{margin-top:-13px;border-bottom:13px solid #4da3ff}
   }
 </style>
@@ -136,8 +149,12 @@
   </div>
 </div>
 <input type="file" id="mkfile" accept=".json,application/json" style="display:none">
+<div id="near">
+  <div class="hd">附近矿点 <span id="nrclose">收起</span></div>
+  <div id="nrlist"></div>
+</div>
 <div id="panel">
-  <div id="chips"><button id="btn4">☕ 投喂</button><button id="fb4">💬 反馈</button></div>
+  <div id="chips"><button id="btn4">☕ 投喂</button><button id="nrbtn">📋 附近</button><button id="fb4">💬 反馈</button></div>
   <div class="loc" id="locbox">还没定位 · 点右上角「定位我」，浏览器会问你要权限，允许了才准</div>
 </div>
 
@@ -256,8 +273,44 @@ function popHtml(p){
   return `<div class="pop"><h4>${p.name}</h4>
     <div style="color:#8fb3dd;font-size:12px;margin-bottom:5px">
       ${p.kd} · ${SC[p.sc]||'未标注'} · ${US[p.us]||'未标注'}<br>
-      约 ${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}（精度约百米，公开名录坐标）</div></div>`;
+      约 ${p.lat.toFixed(3)}, ${p.lng.toFixed(3)}（精度约百米，公开名录坐标）</div>
+    <a href="javascript:0" class="shr" data-la="${p.lat}" data-lo="${p.lng}" data-nm="${p.name}"
+      style="display:inline-block;margin-top:4px;padding:3px 9px;border-radius:14px;background:#1b3a6b;
+      border:1px solid #3b6bb5;color:#dce9ff;font-size:12px;text-decoration:none">分享这个点</a></div>`;
 }
+
+/* 分享：复制一个带坐标的链接，别人打开直接跳到这个点 */
+document.addEventListener('click', function(ev){
+  var a = ev.target.closest && ev.target.closest('.shr');
+  if(!a) return;
+  ev.preventDefault();
+  var la = a.dataset.la, lo = a.dataset.lo, nm = a.dataset.nm || '';
+  var u = location.origin + location.pathname +
+    '?lat=' + (+la).toFixed(5) + '&lng=' + (+lo).toFixed(5) + '&z=14' + (nm ? '&n=' + encodeURIComponent(nm) : '');
+  var done = function(txt){ locbox.innerHTML = '<span style="color:#7fd8a8">' + txt + '</span> ' + u; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(u).then(function(){ done('链接复制好了：'); },
+      function(){ done('复制没成功，自己复制这一行：'); });
+  } else {
+    done('自己复制这一行：');
+  }
+});
+
+/* 打开带坐标的分享链接：直接跳过去 */
+(function(){
+  var qs = new URLSearchParams(location.search);
+  if(!qs.get('lat') || !qs.get('lng')) return;
+  var la = parseFloat(qs.get('lat')), lo = parseFloat(qs.get('lng')), z = parseFloat(qs.get('z')) || 14;
+  var nm = qs.get('n') || '';
+  if(isNaN(la) || isNaN(lo)) return;
+  setTimeout(function(){
+    map.setView([la, lo], z);
+    L.circleMarker([la, lo], {radius:9, color:'#ffd66b', weight:3, fillColor:'#ffd66b', fillOpacity:.85})
+      .addTo(map)
+      .bindPopup('<div class="pop"><h4>' + (nm || '分享的点') + '</h4>' +
+        '<div style="color:#8fb3dd;font-size:12px">' + la + ', ' + lo + '</div></div>').openPopup();
+  }, 300);
+})();
 
 function renderVisible(){
   layerAll.clearLayers();
@@ -425,6 +478,53 @@ function bearName(la1,lo1,la2,lo2){
   return d[Math.round(b/22.5)%16];
 }
 
+/* ── 附近矿点：按当前筛选 + 距离排序 ── */
+function distKm(la1,lo1,la2,lo2){
+  const R=6371, r=x=>x*Math.PI/180;
+  const dLa=r(la2-la1), dLo=r(lo2-lo1);
+  const a=Math.sin(dLa/2)**2 + Math.cos(r(la1))*Math.cos(r(la2))*Math.sin(dLo/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+const nearBox = document.getElementById('near');
+const nrlist = document.getElementById('nrlist');
+const nrclose = document.getElementById('nrclose');
+if(nrclose) nrclose.onclick = ()=> nearBox.classList.remove('show');
+
+function buildNear(){
+  const src = me ? [me.lat, me.lng] : map.getCenter();
+  const c = {lat: src[0], lng: src[1]};
+  const arr = [];
+  for(let i=0;i<pts.length;i++){
+    const p = pts[i];
+    if(!kindsOn[p.st.label]) continue;
+    arr.push({p, d: distKm(c.lat,c.lng,p.lat,p.lng)});
+  }
+  arr.sort((a,b)=>a.d-b.d);
+  const top = arr.slice(0, 40);
+  if(!top.length){ nrlist.innerHTML = '<div class="nr">筛完了，一个点都没有</div>'; return; }
+  nrlist.innerHTML = '';
+  top.forEach(o=>{
+    const p = o.p;
+    const d = o.d < 1 ? Math.round(o.d*1000)+' 米' : o.d.toFixed(1)+' 公里';
+    const div = document.createElement('div');
+    div.className = 'nr';
+    div.innerHTML = '<b>'+p.name+'</b><i>'+p.st.label+' · '+d+' · '+
+      bearName(c.lat,c.lng,p.lat,p.lng)+'</i>';
+    div.onclick = ()=> map.flyTo([p.lat,p.lng], 13);
+    nrlist.appendChild(div);
+  });
+}
+
+function toggleNear(){
+  const on = nearBox.classList.toggle('show');
+  if(on){ buildNear(); if(nrBtn) nrBtn.classList.add('on'); }
+  else if(nrBtn) nrBtn.classList.remove('on');
+}
+
+const nrBtn = document.getElementById('nrbtn');
+if(nrBtn) nrBtn.onclick = toggleNear;
+
 /* ── 指南针 ── */
 const arw = document.getElementById('hdgarw');
 function onOrient(e){
@@ -574,6 +674,7 @@ function drawMarks(){
     }).addTo(markLayer).bindPopup(
       '<div class="pop"><h4>'+m.name+'</h4>'+
       '<div style="color:#8fb3dd;font-size:12px">'+(m.note ? m.note+'<br>' : '')+
+      (m.res ? '<span style="color:#7fd8a8">结果：'+m.res+'</span><br>' : '')+
       m.lat+', '+m.lng+'</div></div>', {maxWidth:240});
   });
 }
@@ -610,6 +711,7 @@ function renderList(){
     var mine = isMine(m);
     d.innerHTML = (canDel(m) ? '<u data-del="'+m.id+'">删</u>' : '') +
       '<b>'+m.name+'</b>' + (mine ? '' : '<em>别人的</em>') +
+      (m.res ? '<s>挖到：'+m.res+'</s>' : '') +
       '<i>'+(m.note || '（无备注）')+' · '+m.lat+', '+m.lng+'</i>';
     d.onclick = function(ev){
       if(ev.target.dataset.del){
@@ -647,10 +749,13 @@ function openMarkDialog(latlng){
   if(name === null) return;
   var note = prompt('备注（可以留空）', '');
   if(note === null) note = '';
+  var res = prompt('在这挖到过啥？（比如 0.3g 砂金 / 没挖到，可留空）', '');
+  if(res === null) res = '';
   var m = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
     name: (name||'').trim() || '我的点',
     note: (note||'').trim(),
+    res: (res||'').trim(),
     lat: +latlng.lat.toFixed(5),
     lng: +latlng.lng.toFixed(5),
     o: MY_ID,
@@ -761,6 +866,10 @@ renderList();
   #fb4{display:inline-block;vertical-align:top;margin:3px 4px 0 0;padding:3px 9px;border-radius:20px;
     background:#122b3a;border:1px solid #3b8ab5;color:#a9dcff;font-size:12px;line-height:1.5;
     font-family:inherit;cursor:pointer}
+  #nrbtn{display:inline-block;vertical-align:top;margin:3px 4px 0 0;padding:3px 9px;border-radius:20px;
+    background:#22183a;border:1px solid #7a5cc0;color:#d8c8ff;font-size:12px;line-height:1.5;
+    font-family:inherit;cursor:pointer}
+  #nrbtn.on{background:#3a2a6b;border-color:#a98af0;color:#fff}
   #fbmask{position:fixed;inset:0;z-index:3100;background:rgba(4,8,16,.78);display:none;
     align-items:center;justify-content:center;padding:16px}
   #fbmask.show{display:flex}
