@@ -32,7 +32,8 @@
   #btn3{position:absolute;right:10px;top:102px;z-index:960;background:#6b1b3a;border:1px solid #b53b6b;
     color:#ffd6e6;border-radius:12px;padding:8px 12px;font-size:13px}
   #btn3.on{background:#ff5c8a;border-color:#ffc2d6;color:#2a0a16;font-weight:600}
-  #marks{position:absolute;right:10px;top:148px;width:236px;max-height:52vh;overflow:auto;z-index:900;
+  #btn5{position:absolute;right:10px;top:148px;z-index:960;background:#16382c;border:1px solid #3b8a6b;
+    color:#c8f3e0;border-radius:12px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit}  #marks{position:absolute;right:10px;top:194px;width:236px;max-height:52vh;overflow:auto;z-index:900;
     background:rgba(20,12,20,.95);border:1px solid #4a2238;border-radius:12px;padding:8px;font-size:12px;
     display:none}
   #marks.show{display:block}
@@ -98,7 +99,8 @@
     #btn{top:92px}
     #btn2{top:138px}
     #btn3{top:184px}
-    #marks{top:232px;width:auto;left:8px;right:8px}
+    #btn5{top:230px}
+    #marks{top:278px;width:auto;left:8px;right:8px}
     #compass{right:88px;top:81px;width:56px;height:56px}
     #compass .arw{margin-top:-13px;border-bottom:13px solid #4da3ff}
   }
@@ -120,6 +122,7 @@
 </div>
 <button id="btn3">✚ 添加标记</button>
 <div id="addhint">点地图上你要标的地方</div>
+<button id="btn5">⟳ 刷新</button>
 <div id="marks">
   <div class="hd">我的标记 <span id="mkclose">收起</span></div>
   <div id="mklist"></div>
@@ -487,6 +490,10 @@ document.getElementById('btn').onclick = ()=>{
 
 /* ── 矿点总开关 ── */
 let showMines = true;
+document.getElementById('btn5').onclick = function(){
+  var u = location.pathname + '?t=' + Date.now();
+  location.replace(u);
+};
 document.getElementById('btn2').onclick = ()=>{
   showMines = !showMines;
   if(showMines){ layerAll.addTo(map); renderVisible(); } else map.removeLayer(layerAll);
