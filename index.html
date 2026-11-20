@@ -54,6 +54,22 @@
     background:#ff5c8a;color:#2a0a16;font-size:13px;padding:7px 14px;border-radius:20px;
     font-weight:600;display:none;box-shadow:0 2px 10px rgba(0,0,0,.4)}
   #addhint.show{display:block}
+  #compass{position:absolute;left:12px;top:calc(50% - 32px);width:64px;height:64px;z-index:955;
+    border-radius:50%;background:rgba(14,22,38,.78);border:1px solid #23375a;
+    box-shadow:0 2px 12px rgba(0,0,0,.4);pointer-events:none}
+  #compass .nd{position:absolute;left:50%;top:4px;transform:translateX(-50%);font-size:11px;
+    font-weight:700;color:#ff6b8a}
+  #compass .sd,#compass .wd,#compass .ed{position:absolute;font-size:10px;color:#8fb3dd}
+  #compass .sd{left:50%;bottom:4px;transform:translateX(-50%)}
+  #compass .wd{left:5px;top:50%;transform:translateY(-50%)}
+  #compass .ed{right:5px;top:50%;transform:translateY(-50%)}
+  #compass .arw{position:absolute;left:50%;top:50%;margin-left:-5px;margin-top:-15px;width:0;height:0;
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-bottom:15px solid #4da3ff;transform-origin:50% 100%;transform:rotate(0deg);
+    opacity:0;transition:opacity .3s}
+  #compass .arw.on{opacity:1}
+  #compass .dt{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;
+    border-radius:50%;background:#8fb3dd}
   #searchwrap{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:965;
     width:calc(100% - 150px);max-width:330px;display:flex;gap:6px}
   #q{flex:1;min-width:0;background:rgba(14,22,38,.96);border:1px solid #23375a;border-radius:20px;
@@ -70,6 +86,8 @@
   .leaflet-popup-tip{background:#101c2f}
   .leaflet-container{background:#0b1220}
   .darktile{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9) saturate(.6)}
+.memark{filter:drop-shadow(0 0 6px rgba(255,59,107,.95)) drop-shadow(0 0 12px rgba(255,59,107,.6))}
+.melbl{color:#fff;font-size:12px;font-weight:600;background:rgba(255,59,107,.9);border-radius:10px;padding:3px 8px;white-space:nowrap;box-shadow:0 2px 10px rgba(255,59,107,.5);pointer-events:none}
   @media (max-width:520px){
     #title{top:8px;left:8px;right:96px;max-width:none;font-size:12px;padding:6px 10px;line-height:1.4;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -86,6 +104,11 @@
 </head>
 <body>
 <div id="map"></div>
+<div id="compass">
+  <div class="nd">N</div><div class="sd">S</div><div class="wd">W</div><div class="ed">E</div>
+  <div class="dt"></div>
+  <div class="arw" id="hdgarw"></div>
+</div>
 <div id="title">中国金矿分布 <b>全国矿产地 2 万+ 处</b><span id="cnt" style="color:#8fb3dd"></span></div>
 <button id="btn">定位我</button>
 <button id="btn2">隐藏矿点</button>
@@ -379,21 +402,69 @@ Object.keys(kindsOn).forEach(k=>{
   chips.appendChild(s);
 });
 
+/* ── 方位角转中文方向 ── */
+function bearing(la1,lo1,la2,lo2){
+  const φ1=la1*Math.PI/180, φ2=la2*Math.PI/180, Δλ=(lo2-lo1)*Math.PI/180;
+  const y=Math.sin(Δλ)*Math.cos(φ2);
+  const x=Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+  return (Math.atan2(y,x)*180/Math.PI+360)%360;
+}
+function bearName(la1,lo1,la2,lo2){
+  const b=bearing(la1,lo1,la2,lo2);
+  const d=['正北','东北偏北','东北','东北偏东','正东','东南偏东','东南','东南偏南',
+           '正南','西南偏南','西南','西南偏西','正西','西北偏西','西北','西北偏北'];
+  return d[Math.round(b/22.5)%16];
+}
+
+/* ── 指南针 ── */
+const arw = document.getElementById('hdgarw');
+function onOrient(e){
+  let h = null;
+  if(typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)){
+    h = e.webkitCompassHeading;
+  } else if(e.alpha != null && (e.absolute || e.type === 'deviceorientationabsolute')){
+    h = 360 - e.alpha;
+  }
+  if(h == null) return;
+  const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+  h = ((h + so) % 360 + 360) % 360;
+  arw.classList.add('on');
+  arw.style.transform = `rotate(${h}deg)`;
+}
+function startCompass(){
+  if(!window.DeviceOrientationEvent) return;
+  const add = ()=>{
+    if(startCompass.done) return;
+    startCompass.done = true;
+    window.addEventListener('deviceorientationabsolute', onOrient, true);
+    window.addEventListener('deviceorientation', onOrient, true);
+  };
+  if(typeof DeviceOrientationEvent.requestPermission === 'function'){
+    DeviceOrientationEvent.requestPermission().then(r=>{ if(r==='granted') add(); }).catch(()=>{});
+  } else add();
+}
+startCompass();
+
 /* ── 定位 ── */
-let me=null, acc=null;
+let me=null, meLbl=null, acc=null;
 const locbox = document.getElementById('locbox');
 document.getElementById('btn').onclick = ()=>{
+  startCompass();
   if(!navigator.geolocation){ locbox.textContent='这个浏览器没有定位能力'; return; }
   locbox.innerHTML = '正在定位…手机上 GPS 要几秒，电脑靠 WiFi 定位误差会大得多';
   navigator.geolocation.watchPosition(pos=>{
     const {latitude:la, longitude:lo, accuracy:ac} = pos.coords;
     if(!me){
-      me = L.circleMarker([la,lo],{radius:7,color:'#fff',weight:2,fillColor:'#4da3ff',fillOpacity:1}).addTo(map)
-            .bindPopup('你在这儿');
       acc = L.circle([la,lo],{radius:ac,color:'#4da3ff',weight:1,fillOpacity:.1,fillColor:'#4da3ff'}).addTo(map);
+      me = L.circleMarker([la,lo],{radius:9,color:'#fff',weight:3,fillColor:'#ff3b6b',fillOpacity:1,className:'memark'}).addTo(map)
+            .bindPopup('我在这儿');
+      meLbl = L.marker([la,lo],{icon:L.divIcon({className:'melbl',html:'我在这儿',iconSize:[74,24],iconAnchor:[-8,14]}),interactive:false}).addTo(map);
+      me.bringToFront(); meLbl.getElement && setTimeout(()=>meLbl.getElement()&&meLbl.getElement().style.setProperty('z-index',900),0);
       map.setView([la,lo], Math.max(map.getZoom(),12));
     } else {
       me.setLatLng([la,lo]);
+      meLbl.setLatLng([la,lo]);
+      me.bringToFront();
       acc.setLatLng([la,lo]).setRadius(ac);
     }
     let best=null, bd=1e18;
@@ -403,8 +474,8 @@ document.getElementById('btn').onclick = ()=>{
       const d = 2*R*Math.asin(Math.sqrt(a));
       if(d<bd){bd=d;best=p;}
     }
-    locbox.innerHTML = `定位 <b>${la.toFixed(5)}, ${lo.toFixed(5)}</b> · 精度 <b>±${Math.round(ac)} 米</b><br>
-      最近的金矿点：<b>${best.name}</b>（${best.kd}）直线约 <b>${bd.toFixed(1)} 公里</b>
+    locbox.innerHTML = `我在这儿 <b>${la.toFixed(5)}, ${lo.toFixed(5)}</b> · 精度 <b>±${Math.round(ac)} 米</b><br>
+      最近的金矿点：<b>${best.name}</b>（${best.kd}）直线约 <b>${bd.toFixed(1)} 公里</b> · 方向 <b>${bearName(la,lo,best.lat,best.lng)}</b>
       <span style="color:#6f88a8">（名录坐标精度约百米，能给你方向，不能当矿口位置）</span>`;
   }, err=>{
     const m = {1:'你拒绝了定位权限', 2:'拿不到位置信号', 3:'定位超时了'};
