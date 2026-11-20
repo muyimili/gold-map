@@ -154,7 +154,7 @@
   <div id="nrlist"></div>
 </div>
 <div id="panel">
-  <div id="chips"><button id="btn4">☕ 投喂</button><button id="nrbtn">📋 附近</button><button id="fb4">💬 反馈</button></div>
+  <div id="chips"><button id="btn7">🛰 卫星</button><button id="btn4">☕ 投喂</button><button id="nrbtn">📋 附近</button><button id="fb4">💬 反馈</button></div>
   <div class="loc" id="locbox">还没定位 · 点右上角「定位我」，浏览器会问你要权限，允许了才准</div>
 </div>
 
@@ -201,6 +201,34 @@ function useBak(){
   });
 }
 useMain();
+
+/* ── 卫星影像：高德影像图，同样是 GCJ-02，标记不用重算 ── */
+const TILE_SAT = {
+  url:'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+  opt:{subdomains:['1','2','3','4'], maxZoom:18}
+};
+const TILE_SATLBL = {
+  url:'https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}',
+  opt:{subdomains:['1','2','3','4'], maxZoom:18}
+};
+let satLayer = null, satLbl = null, satOn = false;
+function toggleSat(){
+  satOn = !satOn;
+  if(satOn){
+    if(mainLayer){ map.removeLayer(mainLayer); mainLayer = null; }
+    if(bakLayer){ map.removeLayer(bakLayer); bakLayer = null; }
+    switched = true;
+    satLayer = L.tileLayer(TILE_SAT.url, TILE_SAT.opt).addTo(map);
+    satLbl = L.tileLayer(TILE_SATLBL.url, TILE_SATLBL.opt).addTo(map);
+    satLayer.bringToBack();
+  }else{
+    if(satLayer){ map.removeLayer(satLayer); satLayer = null; }
+    if(satLbl){ map.removeLayer(satLbl); satLbl = null; }
+    switched = false; useMain();
+  }
+  var b = document.getElementById('btn7');
+  if(b){ b.classList.toggle('on', satOn); b.textContent = satOn ? '🗺 普通' : '🛰 卫星'; }
+}
 map.on('zoomend moveend', function(){
   if(switched) return;
   setTimeout(function(){
@@ -842,12 +870,18 @@ if(nrEl && fbEl && chips) chips.insertBefore(nrEl, fbEl);
 
 drawMarks();
 renderList();
+var satBtn = document.getElementById('btn7');
+if(satBtn) satBtn.onclick = toggleSat;
 </script>
 
 <style>
   #btn4{display:inline-block;vertical-align:top;margin:3px 4px 0 0;padding:3px 9px;border-radius:20px;
     background:#3a2a10;border:1px solid #b58a3b;color:#ffd66b;font-size:12px;line-height:1.5;
     font-family:inherit;cursor:pointer}
+  #btn7{display:inline-block;vertical-align:top;margin:3px 4px 0 0;padding:3px 9px;border-radius:20px;
+    background:#10283a;border:1px solid #3fb5a5;color:#8ff0e2;font-size:12px;line-height:1.5;
+    font-family:inherit;cursor:pointer}
+  #btn7.on{background:#0f4a3f;border-color:#5ff0d5;color:#e6fffa}
   #tipmask{position:fixed;inset:0;z-index:3000;background:rgba(4,8,16,.72);display:none;
     align-items:center;justify-content:center;padding:16px}
   #tipmask.show{display:flex}
